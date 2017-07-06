@@ -1,3 +1,8 @@
+import * as $ from 'jquery';
+
+import {QueryBuilder} from './core';
+import {error} from './utils';
+
 /**
  * The {@link http://learn.jquery.com/plugins/|jQuery Plugins} namespace
  * @external "jQuery.fn"
@@ -17,10 +22,10 @@
  */
 $.fn.queryBuilder = function(option) {
     if (this.length === 0) {
-        Utils.error('Config', 'No target defined');
+        error('Config', 'No target defined');
     }
     if (this.length > 1) {
-        Utils.error('Config', 'Unable to initialize on multiple target');
+        error('Config', 'Unable to initialize on multiple target');
     }
 
     var data = this.data('queryBuilder');

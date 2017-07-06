@@ -1,3 +1,8 @@
+import {QueryBuilder} from '../../core';
+import {error} from '../../utils';
+import {QueryBuilderSelectors} from '../../defaults';
+import './plugin.scss';
+
 /**
  * @class FilterDescription
  * @memberof module:plugins
@@ -33,7 +38,7 @@ QueryBuilder.define('filter-description', function(options) {
     // POPOVER
     else if (options.mode === 'popover') {
         if (!$.fn.popover || !$.fn.popover.Constructor || !$.fn.popover.Constructor.prototype.fixTitle) {
-            Utils.error('MissingLibrary', 'Bootstrap Popover is required to use "filter-description" plugin. Get it here: http://getbootstrap.com');
+            error('MissingLibrary', 'Bootstrap Popover is required to use "filter-description" plugin. Get it here: http://getbootstrap.com');
         }
 
         this.on('afterUpdateRuleFilter afterUpdateRuleOperator', function(e, rule) {
@@ -50,7 +55,7 @@ QueryBuilder.define('filter-description', function(options) {
             else {
                 if ($b.length === 0) {
                     $b = $('<button type="button" class="btn btn-xs btn-info filter-description" data-toggle="popover"><i class="' + options.icon + '"></i></button>');
-                    $b.prependTo(rule.$el.find(QueryBuilder.selectors.rule_actions));
+                    $b.prependTo(rule.$el.find(QueryBuilderSelectors.rule_actions));
 
                     $b.popover({
                         placement: 'left',
@@ -77,7 +82,7 @@ QueryBuilder.define('filter-description', function(options) {
     // BOOTBOX
     else if (options.mode === 'bootbox') {
         if (!('bootbox' in window)) {
-            Utils.error('MissingLibrary', 'Bootbox is required to use "filter-description" plugin. Get it here: http://bootboxjs.com');
+            error('MissingLibrary', 'Bootbox is required to use "filter-description" plugin. Get it here: http://bootboxjs.com');
         }
 
         this.on('afterUpdateRuleFilter afterUpdateRuleOperator', function(e, rule) {
@@ -90,7 +95,7 @@ QueryBuilder.define('filter-description', function(options) {
             else {
                 if ($b.length === 0) {
                     $b = $('<button type="button" class="btn btn-xs btn-info filter-description" data-toggle="bootbox"><i class="' + options.icon + '"></i></button>');
-                    $b.prependTo(rule.$el.find(QueryBuilder.selectors.rule_actions));
+                    $b.prependTo(rule.$el.find(QueryBuilderSelectors.rule_actions));
 
                     $b.on('click', function() {
                         bootbox.alert($b.data('description'));

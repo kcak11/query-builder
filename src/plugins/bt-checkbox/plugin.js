@@ -1,3 +1,7 @@
+import {QueryBuilder} from '../../core';
+import {iterateOptions} from '../../utils';
+import './plugin.scss';
+
 /**
  * @class BtCheckbox
  * @memberof module:plugins
@@ -27,7 +31,7 @@ QueryBuilder.define('bt-checkbox', function(options) {
             var style = filter.vertical ? ' style="display:block"' : '';
             var i = 0;
 
-            Utils.iterateOptions(filter.values, function(key, val) {
+            iterateOptions(filter.values, function(key, val) {
                 var color = filter.colors[key] || filter.colors._def_ || options.color;
                 var id = name + '_' + (i++);
 

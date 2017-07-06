@@ -1,3 +1,9 @@
+import * as $ from 'jquery';
+
+import {QueryBuilder} from './core';
+import {error, escapeElementId} from './utils';
+import {QueryBuilderTypes, QueryBuilderSelectors} from './defaults';
+
 /**
  * Performs value validation
  * @param {Rule} rule
@@ -85,7 +91,7 @@ QueryBuilder.prototype._validateValue = function(rule, value) {
                 tempValue = $.isArray(value[i]) ? value[i] : [value[i]];
 
                 for (var j = 0; j < tempValue.length; j++) {
-                    switch (QueryBuilder.types[filter.type]) {
+                    switch (QueryBuilderTypes[filter.type]) {
                         case 'string':
                             if (tempValue[j] === undefined || tempValue[j].length === 0) {
                                 if (!validation.allow_empty_value) {
@@ -171,7 +177,7 @@ QueryBuilder.prototype._validateValue = function(rule, value) {
                             // we need MomentJS
                             if (validation.format) {
                                 if (!('moment' in window)) {
-                                    Utils.error('MissingLibrary', 'MomentJS is required for Date/Time validation. Get it here http://momentjs.com');
+                                    error('MissingLibrary', 'MomentJS is required for Date/Time validation. Get it here http://momentjs.com');
                                 }
 
                                 var datetime = moment(tempValue[j], validation.format);
@@ -264,7 +270,7 @@ QueryBuilder.prototype.getOperators = function(filter) {
             }
         }
         // type check
-        else if (this.operators[i].apply_to.indexOf(QueryBuilder.types[filter.type]) == -1) {
+        else if (this.operators[i].apply_to.indexOf(QueryBuilderTypes[filter.type]) == -1) {
             continue;
         }
 
@@ -308,7 +314,7 @@ QueryBuilder.prototype.getFilterById = function(id, doThrow) {
         }
     }
 
-    Utils.error(doThrow !== false, 'UndefinedFilter', 'Undefined filter "{0}"', id);
+    error(doThrow !== false, 'UndefinedFilter', 'Undefined filter "{0}"', id);
 
     return null;
 };
@@ -332,7 +338,7 @@ QueryBuilder.prototype.getOperatorByType = function(type, doThrow) {
         }
     }
 
-    Utils.error(doThrow !== false, 'UndefinedOperator', 'Undefined operator "{0}"', type);
+    error(doThrow !== false, 'UndefinedOperator', 'Undefined operator "{0}"', type);
 
     return null;
 };
@@ -353,10 +359,10 @@ QueryBuilder.prototype.getRuleInputValue = function(rule) {
         value = filter.valueGetter.call(this, rule);
     }
     else {
-        var $value = rule.$el.find(QueryBuilder.selectors.value_container);
+        var $value = rule.$el.find(QueryBuilderSelectors.value_container);
 
         for (var i = 0; i < operator.nb_inputs; i++) {
-            var name = Utils.escapeElementId(rule.id + '_value_' + i);
+            var name = escapeElementId(rule.id + '_value_' + i);
             var tmp;
 
             switch (filter.input) {
@@ -441,14 +447,14 @@ QueryBuilder.prototype.setRuleInputValue = function(rule, value) {
         filter.valueSetter.call(this, rule, value);
     }
     else {
-        var $value = rule.$el.find(QueryBuilder.selectors.value_container);
+        var $value = rule.$el.find(QueryBuilderSelectors.value_container);
 
         if (operator.nb_inputs == 1) {
             value = [value];
         }
 
         for (var i = 0; i < operator.nb_inputs; i++) {
-            var name = Utils.escapeElementId(rule.id + '_value_' + i);
+            var name = escapeElementId(rule.id + '_value_' + i);
 
             switch (filter.input) {
                 case 'radio':

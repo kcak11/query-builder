@@ -4,14 +4,14 @@
  * @readonly
  * @private
  */
-QueryBuilder.types = {
-    'string':   'string',
-    'integer':  'number',
-    'double':   'number',
-    'date':     'datetime',
-    'time':     'datetime',
+export const QueryBuilderTypes = {
+    'string'  : 'string',
+    'integer' : 'number',
+    'double'  : 'number',
+    'date'    : 'datetime',
+    'time'    : 'datetime',
     'datetime': 'datetime',
-    'boolean':  'boolean'
+    'boolean' : 'boolean'
 };
 
 /**
@@ -20,7 +20,7 @@ QueryBuilder.types = {
  * @readonly
  * @private
  */
-QueryBuilder.inputs = [
+export const QueryBuilderInputs = [
     'text',
     'number',
     'textarea',
@@ -35,7 +35,7 @@ QueryBuilder.inputs = [
  * @readonly
  * @private
  */
-QueryBuilder.modifiable_options = [
+export const ModifiableOptions = [
     'display_errors',
     'allow_groups',
     'allow_empty',
@@ -48,73 +48,61 @@ QueryBuilder.modifiable_options = [
  * @type {object.<string, string>}
  * @readonly
  */
-QueryBuilder.selectors = {
-    group_container:      '.rules-group-container',
-    rule_container:       '.rule-container',
-    filter_container:     '.rule-filter-container',
-    operator_container:   '.rule-operator-container',
-    value_container:      '.rule-value-container',
-    error_container:      '.error-container',
-    condition_container:  '.rules-group-header .group-conditions',
+export var QueryBuilderSelectors = {
+    group_container    : '.rules-group-container',
+    rule_container     : '.rule-container',
+    filter_container   : '.rule-filter-container',
+    operator_container : '.rule-operator-container',
+    value_container    : '.rule-value-container',
+    error_container    : '.error-container',
+    condition_container: '.rules-group-header .group-conditions',
 
-    rule_header:          '.rule-header',
-    group_header:         '.rules-group-header',
-    group_actions:        '.group-actions',
-    rule_actions:         '.rule-actions',
+    rule_header  : '.rule-header',
+    group_header : '.rules-group-header',
+    group_actions: '.group-actions',
+    rule_actions : '.rule-actions',
 
-    rules_list:           '.rules-group-body>.rules-list',
+    rules_list: '.rules-group-body>.rules-list',
 
-    group_condition:      '.rules-group-header [name$=_cond]',
-    rule_filter:          '.rule-filter-container [name$=_filter]',
-    rule_operator:        '.rule-operator-container [name$=_operator]',
-    rule_value:           '.rule-value-container [name*=_value_]',
+    group_condition: '.rules-group-header [name$=_cond]',
+    rule_filter    : '.rule-filter-container [name$=_filter]',
+    rule_operator  : '.rule-operator-container [name$=_operator]',
+    rule_value     : '.rule-value-container [name*=_value_]',
 
-    add_rule:             '[data-add=rule]',
-    delete_rule:          '[data-delete=rule]',
-    add_group:            '[data-add=group]',
-    delete_group:         '[data-delete=group]'
+    add_rule    : '[data-add=rule]',
+    delete_rule : '[data-delete=rule]',
+    add_group   : '[data-add=group]',
+    delete_group: '[data-delete=group]'
 };
-
-/**
- * Template strings (see template.js)
- * @type {object.<string, string>}
- * @readonly
- */
-QueryBuilder.templates = {};
-
-/**
- * Localized strings (see i18n/)
- * @type {object.<string, object>}
- * @readonly
- */
-QueryBuilder.regional = {};
 
 /**
  * Default operators
  * @type {object.<string, object>}
  * @readonly
  */
-QueryBuilder.OPERATORS = {
-    equal:            { type: 'equal',            nb_inputs: 1, multiple: false, apply_to: ['string', 'number', 'datetime', 'boolean'] },
-    not_equal:        { type: 'not_equal',        nb_inputs: 1, multiple: false, apply_to: ['string', 'number', 'datetime', 'boolean'] },
-    in:               { type: 'in',               nb_inputs: 1, multiple: true,  apply_to: ['string', 'number', 'datetime'] },
-    not_in:           { type: 'not_in',           nb_inputs: 1, multiple: true,  apply_to: ['string', 'number', 'datetime'] },
-    less:             { type: 'less',             nb_inputs: 1, multiple: false, apply_to: ['number', 'datetime'] },
-    less_or_equal:    { type: 'less_or_equal',    nb_inputs: 1, multiple: false, apply_to: ['number', 'datetime'] },
-    greater:          { type: 'greater',          nb_inputs: 1, multiple: false, apply_to: ['number', 'datetime'] },
-    greater_or_equal: { type: 'greater_or_equal', nb_inputs: 1, multiple: false, apply_to: ['number', 'datetime'] },
-    between:          { type: 'between',          nb_inputs: 2, multiple: false, apply_to: ['number', 'datetime'] },
-    not_between:      { type: 'not_between',      nb_inputs: 2, multiple: false, apply_to: ['number', 'datetime'] },
-    begins_with:      { type: 'begins_with',      nb_inputs: 1, multiple: false, apply_to: ['string'] },
-    not_begins_with:  { type: 'not_begins_with',  nb_inputs: 1, multiple: false, apply_to: ['string'] },
-    contains:         { type: 'contains',         nb_inputs: 1, multiple: false, apply_to: ['string'] },
-    not_contains:     { type: 'not_contains',     nb_inputs: 1, multiple: false, apply_to: ['string'] },
-    ends_with:        { type: 'ends_with',        nb_inputs: 1, multiple: false, apply_to: ['string'] },
-    not_ends_with:    { type: 'not_ends_with',    nb_inputs: 1, multiple: false, apply_to: ['string'] },
-    is_empty:         { type: 'is_empty',         nb_inputs: 0, multiple: false, apply_to: ['string'] },
-    is_not_empty:     { type: 'is_not_empty',     nb_inputs: 0, multiple: false, apply_to: ['string'] },
-    is_null:          { type: 'is_null',          nb_inputs: 0, multiple: false, apply_to: ['string', 'number', 'datetime', 'boolean'] },
-    is_not_null:      { type: 'is_not_null',      nb_inputs: 0, multiple: false, apply_to: ['string', 'number', 'datetime', 'boolean'] }
+export const QueryBuilderOperators = {
+    // @formatter:off
+    equal           : {type : 'equal', nb_inputs: 1, multiple : false, apply_to : ['string', 'number', 'datetime', 'boolean']},
+    not_equal       : {type : 'not_equal', nb_inputs: 1, multiple : false, apply_to : ['string', 'number', 'datetime', 'boolean']},
+    in              : {type: 'in', nb_inputs: 1, multiple: true, apply_to: ['string', 'number', 'datetime']},
+    not_in          : {type: 'not_in', nb_inputs: 1, multiple: true, apply_to: ['string', 'number', 'datetime']},
+    less            : {type: 'less', nb_inputs: 1, multiple: false, apply_to: ['number', 'datetime']},
+    less_or_equal   : {type: 'less_or_equal', nb_inputs: 1, multiple: false, apply_to: ['number', 'datetime']},
+    greater         : {type: 'greater', nb_inputs: 1, multiple: false, apply_to: ['number', 'datetime']},
+    greater_or_equal: {type: 'greater_or_equal', nb_inputs: 1, multiple: false, apply_to: ['number', 'datetime']},
+    between         : {type: 'between', nb_inputs: 2, multiple: false, apply_to: ['number', 'datetime']},
+    not_between     : {type: 'not_between', nb_inputs: 2, multiple: false, apply_to: ['number', 'datetime']},
+    begins_with     : {type: 'begins_with', nb_inputs: 1, multiple: false, apply_to: ['string']},
+    not_begins_with : {type: 'not_begins_with', nb_inputs: 1, multiple: false, apply_to: ['string']},
+    contains        : {type: 'contains', nb_inputs: 1, multiple: false, apply_to: ['string']},
+    not_contains    : {type: 'not_contains', nb_inputs: 1, multiple: false, apply_to: ['string']},
+    ends_with       : {type: 'ends_with', nb_inputs: 1, multiple: false, apply_to: ['string']},
+    not_ends_with   : {type: 'not_ends_with', nb_inputs: 1, multiple: false, apply_to: ['string']},
+    is_empty        : {type: 'is_empty', nb_inputs: 0, multiple: false, apply_to: ['string']},
+    is_not_empty    : {type: 'is_not_empty', nb_inputs: 0, multiple: false, apply_to: ['string']},
+    is_null         : {type : 'is_null', nb_inputs: 0, multiple : false, apply_to : ['string', 'number', 'datetime', 'boolean']},
+    is_not_null     : {type : 'is_not_null', nb_inputs: 0, multiple : false, apply_to : ['string', 'number', 'datetime', 'boolean']}
+    // @formatter:on
 };
 
 /**
@@ -122,45 +110,45 @@ QueryBuilder.OPERATORS = {
  * @type {object}
  * @readonly
  */
-QueryBuilder.DEFAULTS = {
+export var QueryBuilderDefaults = {
     filters: [],
     plugins: [],
 
-    sort_filters: false,
-    display_errors: true,
-    allow_groups: -1,
-    allow_empty: false,
-    conditions: ['AND', 'OR'],
-    default_condition: 'AND',
-    inputs_separator: ' , ',
-    select_placeholder: '------',
+    sort_filters        : false,
+    display_errors      : true,
+    allow_groups        : -1,
+    allow_empty         : false,
+    conditions          : ['AND', 'OR'],
+    default_condition   : 'AND',
+    inputs_separator    : ' , ',
+    select_placeholder  : '------',
     display_empty_filter: true,
-    default_filter: null,
-    optgroups: {},
+    default_filter      : null,
+    optgroups           : {},
 
     default_rule_flags: {
-        filter_readonly: false,
+        filter_readonly  : false,
         operator_readonly: false,
-        value_readonly: false,
-        no_delete: false
+        value_readonly   : false,
+        no_delete        : false
     },
 
     default_group_flags: {
         condition_readonly: false,
-        no_add_rule: false,
-        no_add_group: false,
-        no_delete: false
+        no_add_rule       : false,
+        no_add_group      : false,
+        no_delete         : false
     },
 
     templates: {
-        group: null,
-        rule: null,
-        filterSelect: null,
+        group         : null,
+        rule          : null,
+        filterSelect  : null,
         operatorSelect: null
     },
 
     lang_code: 'en',
-    lang: {},
+    lang     : {},
 
     operators: [
         'equal',
@@ -186,10 +174,10 @@ QueryBuilder.DEFAULTS = {
     ],
 
     icons: {
-        add_group:    'glyphicon glyphicon-plus-sign',
-        add_rule:     'glyphicon glyphicon-plus',
+        add_group   : 'glyphicon glyphicon-plus-sign',
+        add_rule    : 'glyphicon glyphicon-plus',
         remove_group: 'glyphicon glyphicon-remove',
-        remove_rule:  'glyphicon glyphicon-remove',
-        error:        'glyphicon glyphicon-warning-sign'
+        remove_rule : 'glyphicon glyphicon-remove',
+        error       : 'glyphicon glyphicon-warning-sign'
     }
 };

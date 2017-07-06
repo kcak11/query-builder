@@ -1,8 +1,14 @@
+import * as $ from 'jquery';
+
+import {QueryBuilder} from './core';
+import {error} from './utils';
+import {ModifiableOptions} from './defaults';
+
 /**
  * Destroys the builder
  * @fires QueryBuilder.beforeDestroy
  */
-QueryBuilder.prototype.destroy = function() {
+QueryBuilder.prototype.destroy = function () {
     /**
      * Before the {@link QueryBuilder#destroy} method
      * @event beforeDestroy
@@ -30,7 +36,7 @@ QueryBuilder.prototype.destroy = function() {
  * @fires QueryBuilder.beforeReset
  * @fires QueryBuilder.afterReset
  */
-QueryBuilder.prototype.reset = function() {
+QueryBuilder.prototype.reset = function () {
     /**
      * Before the {@link QueryBuilder#reset} method, can be prevented
      * @event beforeReset
@@ -61,7 +67,7 @@ QueryBuilder.prototype.reset = function() {
  * @fires QueryBuilder.beforeClear
  * @fires QueryBuilder.afterClear
  */
-QueryBuilder.prototype.clear = function() {
+QueryBuilder.prototype.clear = function () {
     /**
      * Before the {@link QueryBuilder#clear} method, can be prevented
      * @event beforeClear
@@ -93,9 +99,9 @@ QueryBuilder.prototype.clear = function() {
  * Only options defined in QueryBuilder.modifiable_options are modifiable
  * @param {object} options
  */
-QueryBuilder.prototype.setOptions = function(options) {
-    $.each(options, function(opt, value) {
-        if (QueryBuilder.modifiable_options.indexOf(opt) !== -1) {
+QueryBuilder.prototype.setOptions = function (options) {
+    $.each(options, function (opt, value) {
+        if (ModifiableOptions.indexOf(opt) !== -1) {
             this.settings[opt] = value;
         }
     }.bind(this));
@@ -106,7 +112,7 @@ QueryBuilder.prototype.setOptions = function(options) {
  * @param {jQuery} [target]
  * @returns {Node}
  */
-QueryBuilder.prototype.getModel = function(target) {
+QueryBuilder.prototype.getModel = function (target) {
     if (!target) {
         return this.model.root;
     }
@@ -125,7 +131,7 @@ QueryBuilder.prototype.getModel = function(target) {
  * @returns {boolean}
  * @fires QueryBuilder.changer:validate
  */
-QueryBuilder.prototype.validate = function(options) {
+QueryBuilder.prototype.validate = function (options) {
     options = $.extend({
         skip_empty: false
     }, options);
@@ -138,7 +144,7 @@ QueryBuilder.prototype.validate = function(options) {
         var done = 0;
         var errors = 0;
 
-        group.each(function(rule) {
+        group.each(function (rule) {
             if (!rule.filter && options.skip_empty) {
                 return;
             }
@@ -167,7 +173,7 @@ QueryBuilder.prototype.validate = function(options) {
 
             done++;
 
-        }, function(group) {
+        }, function (group) {
             var res = parse(group);
             if (res === true) {
                 done++;
@@ -213,11 +219,11 @@ QueryBuilder.prototype.validate = function(options) {
  * @fires QueryBuilder.changer:groupToJson
  * @fires QueryBuilder.changer:getRules
  */
-QueryBuilder.prototype.getRules = function(options) {
+QueryBuilder.prototype.getRules = function (options) {
     options = $.extend({
-        get_flags: false,
+        get_flags    : false,
         allow_invalid: false,
-        skip_empty: false
+        skip_empty   : false
     }, options);
 
     var valid = this.validate(options);
@@ -230,7 +236,7 @@ QueryBuilder.prototype.getRules = function(options) {
     var out = (function parse(group) {
         var groupData = {
             condition: group.condition,
-            rules: []
+            rules    : []
         };
 
         if (group.data) {
@@ -244,7 +250,7 @@ QueryBuilder.prototype.getRules = function(options) {
             }
         }
 
-        group.each(function(rule) {
+        group.each(function (rule) {
             if (!rule.filter && options.skip_empty) {
                 return;
             }
@@ -255,12 +261,12 @@ QueryBuilder.prototype.getRules = function(options) {
             }
 
             var ruleData = {
-                id: rule.filter ? rule.filter.id : null,
-                field: rule.filter ? rule.filter.field : null,
-                type: rule.filter ? rule.filter.type : null,
-                input: rule.filter ? rule.filter.input : null,
+                id      : rule.filter ? rule.filter.id : null,
+                field   : rule.filter ? rule.filter.field : null,
+                type    : rule.filter ? rule.filter.type : null,
+                input   : rule.filter ? rule.filter.input : null,
                 operator: rule.operator ? rule.operator.type : null,
-                value: value
+                value   : value
             };
 
             if (rule.filter && rule.filter.data || rule.data) {
@@ -284,7 +290,7 @@ QueryBuilder.prototype.getRules = function(options) {
              */
             groupData.rules.push(self.change('ruleToJson', ruleData, rule));
 
-        }, function(model) {
+        }, function (model) {
             var data = parse(model);
             if (data.rules.length !== 0 || !options.skip_empty) {
                 groupData.rules.push(data);
@@ -326,7 +332,7 @@ QueryBuilder.prototype.getRules = function(options) {
  * @fires QueryBuilder.changer:jsonToGroup
  * @fires QueryBuilder.afterSetRules
  */
-QueryBuilder.prototype.setRules = function(data, options) {
+QueryBuilder.prototype.setRules = function (data, options) {
     options = $.extend({
         allow_invalid: false
     }, options);
@@ -334,12 +340,12 @@ QueryBuilder.prototype.setRules = function(data, options) {
     if ($.isArray(data)) {
         data = {
             condition: this.settings.default_condition,
-            rules: data
+            rules    : data
         };
     }
 
     if (!data || !data.rules || (data.rules.length === 0 && !this.settings.allow_empty)) {
-        Utils.error('RulesParse', 'Incorrect data object passed');
+        error('RulesParse', 'Incorrect data object passed');
     }
 
     this.clear();
@@ -367,18 +373,18 @@ QueryBuilder.prototype.setRules = function(data, options) {
             data.condition = self.settings.default_condition;
         }
         else if (self.settings.conditions.indexOf(data.condition) == -1) {
-            Utils.error(!options.allow_invalid, 'UndefinedCondition', 'Invalid condition "{0}"', data.condition);
+            error(!options.allow_invalid, 'UndefinedCondition', 'Invalid condition "{0}"', data.condition);
             data.condition = self.settings.default_condition;
         }
 
         group.condition = data.condition;
 
-        data.rules.forEach(function(item) {
+        data.rules.forEach(function (item) {
             var model;
 
             if (item.rules !== undefined) {
                 if (self.settings.allow_groups !== -1 && self.settings.allow_groups < group.level) {
-                    Utils.error(!options.allow_invalid, 'RulesParse', 'No more than {0} groups are allowed', self.settings.allow_groups);
+                    error(!options.allow_invalid, 'RulesParse', 'No more than {0} groups are allowed', self.settings.allow_groups);
                     self.reset();
                 }
                 else {
@@ -395,7 +401,7 @@ QueryBuilder.prototype.setRules = function(data, options) {
             else {
                 if (!item.empty) {
                     if (item.id === undefined) {
-                        Utils.error(!options.allow_invalid, 'RulesParse', 'Missing rule field id');
+                        error(!options.allow_invalid, 'RulesParse', 'Missing rule field id');
                         item.empty = true;
                     }
                     if (item.operator === undefined) {
@@ -435,7 +441,7 @@ QueryBuilder.prototype.setRules = function(data, options) {
                  * @returns {Rule} the same rule
                  */
                 if (self.change('jsonToRule', model, item) != model) {
-                    Utils.error('RulesParse', 'Plugin tried to change rule reference');
+                    error('RulesParse', 'Plugin tried to change rule reference');
                 }
             }
         });
@@ -449,7 +455,7 @@ QueryBuilder.prototype.setRules = function(data, options) {
          * @returns {Group} the same group
          */
         if (self.change('jsonToGroup', group, data) != group) {
-            Utils.error('RulesParse', 'Plugin tried to change group reference');
+            error('RulesParse', 'Plugin tried to change group reference');
         }
 
     }(data, this.model.root));

@@ -1,91 +1,19 @@
-QueryBuilder.templates.group = '\
-<dl id="{{= it.group_id }}" class="rules-group-container"> \
-  <dt class="rules-group-header"> \
-    <div class="btn-group pull-right group-actions"> \
-      <button type="button" class="btn btn-xs btn-success" data-add="rule"> \
-        <i class="{{= it.icons.add_rule }}"></i> {{= it.translate("add_rule") }} \
-      </button> \
-      {{? it.settings.allow_groups===-1 || it.settings.allow_groups>=it.level }} \
-        <button type="button" class="btn btn-xs btn-success" data-add="group"> \
-          <i class="{{= it.icons.add_group }}"></i> {{= it.translate("add_group") }} \
-        </button> \
-      {{?}} \
-      {{? it.level>1 }} \
-        <button type="button" class="btn btn-xs btn-danger" data-delete="group"> \
-          <i class="{{= it.icons.remove_group }}"></i> {{= it.translate("delete_group") }} \
-        </button> \
-      {{?}} \
-    </div> \
-    <div class="btn-group group-conditions"> \
-      {{~ it.conditions: condition }} \
-        <label class="btn btn-xs btn-primary"> \
-          <input type="radio" name="{{= it.group_id }}_cond" value="{{= condition }}"> {{= it.translate("conditions", condition) }} \
-        </label> \
-      {{~}} \
-    </div> \
-    {{? it.settings.display_errors }} \
-      <div class="error-container"><i class="{{= it.icons.error }}"></i></div> \
-    {{?}} \
-  </dt> \
-  <dd class=rules-group-body> \
-    <ul class=rules-list></ul> \
-  </dd> \
-</dl>';
+import * as $ from 'jquery';
 
-QueryBuilder.templates.rule = '\
-<li id="{{= it.rule_id }}" class="rule-container"> \
-  <div class="rule-header"> \
-    <div class="btn-group pull-right rule-actions"> \
-      <button type="button" class="btn btn-xs btn-danger" data-delete="rule"> \
-        <i class="{{= it.icons.remove_rule }}"></i> {{= it.translate("delete_rule") }} \
-      </button> \
-    </div> \
-  </div> \
-  {{? it.settings.display_errors }} \
-    <div class="error-container"><i class="{{= it.icons.error }}"></i></div> \
-  {{?}} \
-  <div class="rule-filter-container"></div> \
-  <div class="rule-operator-container"></div> \
-  <div class="rule-value-container"></div> \
-</li>';
+import {QueryBuilder} from './core';
+import {iterateOptions} from './utils';
 
-QueryBuilder.templates.filterSelect = '\
-{{ var optgroup = null; }} \
-<select class="form-control" name="{{= it.rule.id }}_filter"> \
-  {{? it.settings.display_empty_filter }} \
-    <option value="-1">{{= it.settings.select_placeholder }}</option> \
-  {{?}} \
-  {{~ it.filters: filter }} \
-    {{? optgroup !== filter.optgroup }} \
-      {{? optgroup !== null }}</optgroup>{{?}} \
-      {{? (optgroup = filter.optgroup) !== null }} \
-        <optgroup label="{{= it.translate(it.settings.optgroups[optgroup]) }}"> \
-      {{?}} \
-    {{?}} \
-    <option value="{{= filter.id }}">{{= it.translate(filter.label) }}</option> \
-  {{~}} \
-  {{? optgroup !== null }}</optgroup>{{?}} \
-</select>';
+import group from './templates/group.html';
+import rule from './templates/rule.html';
+import filterSelect from './templates/filterSelect.html';
+import operatorSelect from './templates/operatorSelect.html';
 
-QueryBuilder.templates.operatorSelect = '\
-{{? it.operators.length === 1 }} \
-<span> \
-{{= it.translate("operators", it.operators[0].type) }} \
-</span> \
-{{?}} \
-{{ var optgroup = null; }} \
-<select class="form-control {{? it.operators.length === 1 }}hide{{?}}" name="{{= it.rule.id }}_operator"> \
-  {{~ it.operators: operator }} \
-    {{? optgroup !== operator.optgroup }} \
-      {{? optgroup !== null }}</optgroup>{{?}} \
-      {{? (optgroup = operator.optgroup) !== null }} \
-        <optgroup label="{{= it.translate(it.settings.optgroups[optgroup]) }}"> \
-      {{?}} \
-    {{?}} \
-    <option value="{{= operator.type }}">{{= it.translate("operators", operator.type) }}</option> \
-  {{~}} \
-  {{? optgroup !== null }}</optgroup>{{?}} \
-</select>';
+/**
+ * Template strings (see template.js)
+ * @type {object.<string, string>}
+ * @readonly
+ */
+QueryBuilder.templates = {group, rule, filterSelect, operatorSelect};
 
 /**
  * Returns group's HTML
@@ -95,15 +23,15 @@ QueryBuilder.templates.operatorSelect = '\
  * @fires QueryBuilder.changer:getGroupTemplate
  * @private
  */
-QueryBuilder.prototype.getGroupTemplate = function(group_id, level) {
+QueryBuilder.prototype.getGroupTemplate = function (group_id, level) {
     var h = this.templates.group({
-        builder: this,
-        group_id: group_id,
-        level: level,
+        builder   : this,
+        group_id  : group_id,
+        level     : level,
         conditions: this.settings.conditions,
-        icons: this.icons,
-        settings: this.settings,
-        translate: this.translate.bind(this)
+        icons     : this.icons,
+        settings  : this.settings,
+        translate : this.translate.bind(this)
     });
 
     /**
@@ -124,12 +52,12 @@ QueryBuilder.prototype.getGroupTemplate = function(group_id, level) {
  * @fires QueryBuilder.changer:getRuleTemplate
  * @private
  */
-QueryBuilder.prototype.getRuleTemplate = function(rule_id) {
+QueryBuilder.prototype.getRuleTemplate = function (rule_id) {
     var h = this.templates.rule({
-        builder: this,
-        rule_id: rule_id,
-        icons: this.icons,
-        settings: this.settings,
+        builder  : this,
+        rule_id  : rule_id,
+        icons    : this.icons,
+        settings : this.settings,
         translate: this.translate.bind(this)
     });
 
@@ -151,13 +79,13 @@ QueryBuilder.prototype.getRuleTemplate = function(rule_id) {
  * @fires QueryBuilder.changer:getRuleFilterTemplate
  * @private
  */
-QueryBuilder.prototype.getRuleFilterSelect = function(rule, filters) {
+QueryBuilder.prototype.getRuleFilterSelect = function (rule, filters) {
     var h = this.templates.filterSelect({
-        builder: this,
-        rule: rule,
-        filters: filters,
-        icons: this.icons,
-        settings: this.settings,
+        builder  : this,
+        rule     : rule,
+        filters  : filters,
+        icons    : this.icons,
+        settings : this.settings,
         translate: this.translate.bind(this)
     });
 
@@ -181,13 +109,13 @@ QueryBuilder.prototype.getRuleFilterSelect = function(rule, filters) {
  * @fires QueryBuilder.changer:getRuleOperatorTemplate
  * @private
  */
-QueryBuilder.prototype.getRuleOperatorSelect = function(rule, operators) {
+QueryBuilder.prototype.getRuleOperatorSelect = function (rule, operators) {
     var h = this.templates.operatorSelect({
-        builder: this,
-        rule: rule,
+        builder  : this,
+        rule     : rule,
         operators: operators,
-        icons: this.icons,
-        settings: this.settings,
+        icons    : this.icons,
+        settings : this.settings,
         translate: this.translate.bind(this)
     });
 
@@ -211,7 +139,7 @@ QueryBuilder.prototype.getRuleOperatorSelect = function(rule, operators) {
  * @fires QueryBuilder.changer:getRuleInput
  * @private
  */
-QueryBuilder.prototype.getRuleInput = function(rule, value_id) {
+QueryBuilder.prototype.getRuleInput = function (rule, value_id) {
     var filter = rule.filter;
     var validation = rule.filter.validation || {};
     var name = rule.id + '_value_' + value_id;
@@ -225,7 +153,7 @@ QueryBuilder.prototype.getRuleInput = function(rule, value_id) {
         switch (filter.input) {
             case 'radio':
             case 'checkbox':
-                Utils.iterateOptions(filter.values, function(key, val) {
+                iterateOptions(filter.values, function (key, val) {
                     h += '<label' + c + '><input type="' + filter.input + '" name="' + name + '" value="' + key + '"> ' + val + '</label> ';
                 });
                 break;
@@ -235,7 +163,7 @@ QueryBuilder.prototype.getRuleInput = function(rule, value_id) {
                 if (filter.placeholder) {
                     h += '<option value="' + filter.placeholder_value + '" disabled selected>' + filter.placeholder + '</option>';
                 }
-                Utils.iterateOptions(filter.values, function(key, val) {
+                iterateOptions(filter.values, function (key, val) {
                     h += '<option value="' + key + '">' + val + '</option> ';
                 });
                 h += '</select>';

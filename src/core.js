@@ -1,43 +1,209 @@
+import * as $ from 'jquery';
+import * as doT from 'dot/doT';
+
+import {Model, Node, Group, Rule} from './model';
+import {fmt, error, iterateOptions, groupSort} from './utils';
+import {QueryBuilderTypes, QueryBuilderInputs, QueryBuilderSelectors, QueryBuilderOperators, QueryBuilderDefaults} from './defaults';
+
+/**
+ * @param {jQuery} $el
+ * @param {object} options - see {@link http://querybuilder.js.org/#options}
+ * @constructor
+ * @fires QueryBuilder.afterInit
+ */
+var QueryBuilder = function ($el, options) {
+    this._init($el, options);
+};
+
+/**
+ * Initialize the builder
+ * @param {jQuery} $el
+ * @param {object} options
+ * @fires QueryBuilder.afterInit
+ * @private
+ */
+QueryBuilder.prototype._init = function ($el, options) {
+    $el[0].queryBuilder = this;
+
+    /**
+     * Element container
+     * @member {jQuery}
+     * @readonly
+     */
+    this.$el = $el;
+
+    /**
+     * Configuration object
+     * @member {object}
+     * @readonly
+     */
+    this.settings = $.extendext(true, 'replace', {}, QueryBuilderDefaults, options);
+
+    /**
+     * Internal model
+     * @member {Model}
+     * @readonly
+     */
+    this.model = new Model();
+
+    /**
+     * Internal status
+     * @member {object}
+     * @property {string} id - id of the container
+     * @property {boolean} generated_id - if the container id has been generated
+     * @property {int} group_id - current group id
+     * @property {int} rule_id - current rule id
+     * @property {boolean} has_optgroup - if filters have optgroups
+     * @property {boolean} has_operator_optgroup - if operators have optgroups
+     * @readonly
+     * @private
+     */
+    this.status = {
+        id                   : null,
+        generated_id         : false,
+        group_id             : 0,
+        rule_id              : 0,
+        has_optgroup         : false,
+        has_operator_optgroup: false
+    };
+
+    /**
+     * List of filters
+     * @member {QueryBuilder.Filter[]}
+     * @readonly
+     */
+    this.filters = this.settings.filters;
+
+    /**
+     * List of icons
+     * @member {object.<string, string>}
+     * @readonly
+     */
+    this.icons = this.settings.icons;
+
+    /**
+     * List of operators
+     * @member {QueryBuilder.Operator[]}
+     * @readonly
+     */
+    this.operators = this.settings.operators;
+
+    /**
+     * List of templates
+     * @member {object.<string, function>}
+     * @readonly
+     */
+    this.templates = this.settings.templates;
+
+    /**
+     * Plugins configuration
+     * @member {object.<string, object>}
+     * @readonly
+     */
+    this.plugins = this.settings.plugins;
+
+    /**
+     * Translations object
+     * @member {object}
+     * @readonly
+     */
+    this.lang = null;
+
+    // translations : english << 'lang_code' << custom
+    if (QueryBuilder.regional['en'] === undefined) {
+        error('Config', '"i18n/en.js" not loaded.');
+    }
+    this.lang = $.extendext(true, 'replace', {}, QueryBuilder.regional['en'], QueryBuilder.regional[this.settings.lang_code], this.settings.lang);
+
+    // "allow_groups" can be boolean or int
+    if (this.settings.allow_groups === false) {
+        this.settings.allow_groups = 0;
+    }
+    else if (this.settings.allow_groups === true) {
+        this.settings.allow_groups = -1;
+    }
+
+    // init templates
+    Object.keys(this.templates).forEach(function (tpl) {
+        if (!this.templates[tpl]) {
+            this.templates[tpl] = QueryBuilder.templates[tpl];
+        }
+        if (typeof this.templates[tpl] == 'string') {
+            this.templates[tpl] = doT.template(this.templates[tpl]);
+        }
+    }, this);
+
+    // ensure we have a container id
+    if (!this.$el.attr('id')) {
+        this.$el.attr('id', 'qb_' + Math.floor(Math.random() * 99999));
+        this.status.generated_id = true;
+    }
+    this.status.id = this.$el.attr('id');
+
+    // INIT
+    this.$el.addClass('query-builder form-inline');
+
+    this.filters = this.checkFilters(this.filters);
+    this.operators = this.checkOperators(this.operators);
+    this.bindEvents();
+    this.initPlugins();
+
+    /**
+     * When the initilization is done, just before creating the root group
+     * @event afterInit
+     * @memberof QueryBuilder
+     */
+    this.trigger('afterInit');
+
+    if (options.rules) {
+        this.setRules(options.rules);
+        delete this.settings.rules;
+    }
+    else {
+        this.setRoot(true);
+    }
+};
+
 /**
  * Checks the configuration of each filter
  * @param {QueryBuilder.Filter[]} filters
  * @returns {QueryBuilder.Filter[]}
  * @throws ConfigError
  */
-QueryBuilder.prototype.checkFilters = function(filters) {
+QueryBuilder.prototype.checkFilters = function (filters) {
     var definedFilters = [];
 
     if (!filters || filters.length === 0) {
-        Utils.error('Config', 'Missing filters list');
+        error('Config', 'Missing filters list');
     }
 
-    filters.forEach(function(filter, i) {
+    filters.forEach(function (filter, i) {
         if (!filter.id) {
-            Utils.error('Config', 'Missing filter {0} id', i);
+            error('Config', 'Missing filter {0} id', i);
         }
         if (definedFilters.indexOf(filter.id) != -1) {
-            Utils.error('Config', 'Filter "{0}" already defined', filter.id);
+            error('Config', 'Filter "{0}" already defined', filter.id);
         }
         definedFilters.push(filter.id);
 
         if (!filter.type) {
             filter.type = 'string';
         }
-        else if (!QueryBuilder.types[filter.type]) {
-            Utils.error('Config', 'Invalid type "{0}"', filter.type);
+        else if (!QueryBuilderTypes[filter.type]) {
+            error('Config', 'Invalid type "{0}"', filter.type);
         }
 
         if (!filter.input) {
-            filter.input = QueryBuilder.types[filter.type] === 'number' ? 'number' : 'text';
+            filter.input = QueryBuilderTypes[filter.type] === 'number' ? 'number' : 'text';
         }
-        else if (typeof filter.input != 'function' && QueryBuilder.inputs.indexOf(filter.input) == -1) {
-            Utils.error('Config', 'Invalid input "{0}"', filter.input);
+        else if (typeof filter.input != 'function' && QueryBuilderInputs.indexOf(filter.input) == -1) {
+            error('Config', 'Invalid input "{0}"', filter.input);
         }
 
         if (filter.operators) {
-            filter.operators.forEach(function(operator) {
+            filter.operators.forEach(function (operator) {
                 if (typeof operator != 'string') {
-                    Utils.error('Config', 'Filter operators must be global operators types (string)');
+                    error('Config', 'Filter operators must be global operators types (string)');
                 }
             });
         }
@@ -65,7 +231,7 @@ QueryBuilder.prototype.checkFilters = function(filters) {
             case 'radio':
             case 'checkbox':
                 if (!filter.values || filter.values.length < 1) {
-                    Utils.error('Config', 'Missing filter "{0}" values', filter.id);
+                    error('Config', 'Missing filter "{0}" values', filter.id);
                 }
                 break;
 
@@ -74,9 +240,9 @@ QueryBuilder.prototype.checkFilters = function(filters) {
                     if (filter.placeholder_value === undefined) {
                         filter.placeholder_value = -1;
                     }
-                    Utils.iterateOptions(filter.values, function(key) {
+                    iterateOptions(filter.values, function (key) {
                         if (key == filter.placeholder_value) {
-                            Utils.error('Config', 'Placeholder of filter "{0}" overlaps with one of its values', filter.id);
+                            error('Config', 'Placeholder of filter "{0}" overlaps with one of its values', filter.id);
                         }
                     });
                 }
@@ -90,14 +256,14 @@ QueryBuilder.prototype.checkFilters = function(filters) {
         }
         else {
             var self = this;
-            filters.sort(function(a, b) {
+            filters.sort(function (a, b) {
                 return self.translate(a.label).localeCompare(self.translate(b.label));
             });
         }
     }
 
     if (this.status.has_optgroup) {
-        filters = Utils.groupSort(filters, 'optgroup');
+        filters = groupSort(filters, 'optgroup');
     }
 
     return filters;
@@ -109,33 +275,33 @@ QueryBuilder.prototype.checkFilters = function(filters) {
  * @returns {QueryBuilder.Operator[]}
  * @throws ConfigError
  */
-QueryBuilder.prototype.checkOperators = function(operators) {
+QueryBuilder.prototype.checkOperators = function (operators) {
     var definedOperators = [];
 
-    operators.forEach(function(operator, i) {
+    operators.forEach(function (operator, i) {
         if (typeof operator == 'string') {
-            if (!QueryBuilder.OPERATORS[operator]) {
-                Utils.error('Config', 'Unknown operator "{0}"', operator);
+            if (!QueryBuilderOperators[operator]) {
+                error('Config', 'Unknown operator "{0}"', operator);
             }
 
-            operators[i] = operator = $.extendext(true, 'replace', {}, QueryBuilder.OPERATORS[operator]);
+            operators[i] = operator = $.extendext(true, 'replace', {}, QueryBuilderOperators[operator]);
         }
         else {
             if (!operator.type) {
-                Utils.error('Config', 'Missing "type" for operator {0}', i);
+                error('Config', 'Missing "type" for operator {0}', i);
             }
 
-            if (QueryBuilder.OPERATORS[operator.type]) {
-                operators[i] = operator = $.extendext(true, 'replace', {}, QueryBuilder.OPERATORS[operator.type], operator);
+            if (QueryBuilderOperators[operator.type]) {
+                operators[i] = operator = $.extendext(true, 'replace', {}, QueryBuilderOperators[operator.type], operator);
             }
 
             if (operator.nb_inputs === undefined || operator.apply_to === undefined) {
-                Utils.error('Config', 'Missing "nb_inputs" and/or "apply_to" for operator "{0}"', operator.type);
+                error('Config', 'Missing "nb_inputs" and/or "apply_to" for operator "{0}"', operator.type);
             }
         }
 
         if (definedOperators.indexOf(operator.type) != -1) {
-            Utils.error('Config', 'Operator "{0}" already defined', operator.type);
+            error('Config', 'Operator "{0}" already defined', operator.type);
         }
         definedOperators.push(operator.type);
 
@@ -153,7 +319,7 @@ QueryBuilder.prototype.checkOperators = function(operators) {
     }, this);
 
     if (this.status.has_operator_optgroup) {
-        operators = Utils.groupSort(operators, 'optgroup');
+        operators = groupSort(operators, 'optgroup');
     }
 
     return operators;
@@ -163,83 +329,82 @@ QueryBuilder.prototype.checkOperators = function(operators) {
  * Adds all events listeners to the builder
  * @private
  */
-QueryBuilder.prototype.bindEvents = function() {
+QueryBuilder.prototype.bindEvents = function () {
     var self = this;
-    var Selectors = QueryBuilder.selectors;
 
     // group condition change
-    this.$el.on('change.queryBuilder', Selectors.group_condition, function() {
+    this.$el.on('change.queryBuilder', QueryBuilderSelectors.group_condition, function () {
         if ($(this).is(':checked')) {
-            var $group = $(this).closest(Selectors.group_container);
+            var $group = $(this).closest(QueryBuilderSelectors.group_container);
             self.getModel($group).condition = $(this).val();
         }
     });
 
     // rule filter change
-    this.$el.on('change.queryBuilder', Selectors.rule_filter, function() {
-        var $rule = $(this).closest(Selectors.rule_container);
+    this.$el.on('change.queryBuilder', QueryBuilderSelectors.rule_filter, function () {
+        var $rule = $(this).closest(QueryBuilderSelectors.rule_container);
         self.getModel($rule).filter = self.getFilterById($(this).val());
     });
 
     // rule operator change
-    this.$el.on('change.queryBuilder', Selectors.rule_operator, function() {
-        var $rule = $(this).closest(Selectors.rule_container);
+    this.$el.on('change.queryBuilder', QueryBuilderSelectors.rule_operator, function () {
+        var $rule = $(this).closest(QueryBuilderSelectors.rule_container);
         self.getModel($rule).operator = self.getOperatorByType($(this).val());
     });
 
     // add rule button
-    this.$el.on('click.queryBuilder', Selectors.add_rule, function() {
-        var $group = $(this).closest(Selectors.group_container);
+    this.$el.on('click.queryBuilder', QueryBuilderSelectors.add_rule, function () {
+        var $group = $(this).closest(QueryBuilderSelectors.group_container);
         self.addRule(self.getModel($group));
     });
 
     // delete rule button
-    this.$el.on('click.queryBuilder', Selectors.delete_rule, function() {
-        var $rule = $(this).closest(Selectors.rule_container);
+    this.$el.on('click.queryBuilder', QueryBuilderSelectors.delete_rule, function () {
+        var $rule = $(this).closest(QueryBuilderSelectors.rule_container);
         self.deleteRule(self.getModel($rule));
     });
 
     if (this.settings.allow_groups !== 0) {
         // add group button
-        this.$el.on('click.queryBuilder', Selectors.add_group, function() {
-            var $group = $(this).closest(Selectors.group_container);
+        this.$el.on('click.queryBuilder', QueryBuilderSelectors.add_group, function () {
+            var $group = $(this).closest(QueryBuilderSelectors.group_container);
             self.addGroup(self.getModel($group));
         });
 
         // delete group button
-        this.$el.on('click.queryBuilder', Selectors.delete_group, function() {
-            var $group = $(this).closest(Selectors.group_container);
+        this.$el.on('click.queryBuilder', QueryBuilderSelectors.delete_group, function () {
+            var $group = $(this).closest(QueryBuilderSelectors.group_container);
             self.deleteGroup(self.getModel($group));
         });
     }
 
     // model events
     this.model.on({
-        'drop': function(e, node) {
+        'drop'  : function (e, node) {
             node.$el.remove();
             self.refreshGroupsConditions();
         },
-        'add': function(e, parent, node, index) {
+        'add'   : function (e, parent, node, index) {
             if (index === 0) {
-                node.$el.prependTo(parent.$el.find('>' + QueryBuilder.selectors.rules_list));
+                node.$el.prependTo(parent.$el.find('>' + QueryBuilderSelectors.rules_list));
             }
             else {
                 node.$el.insertAfter(parent.rules[index - 1].$el);
             }
             self.refreshGroupsConditions();
         },
-        'move': function(e, node, group, index) {
+        'move'  : function (e, node, group, index) {
             node.$el.detach();
 
             if (index === 0) {
-                node.$el.prependTo(group.$el.find('>' + QueryBuilder.selectors.rules_list));
+                node.$el.prependTo(group.$el.find('>' + QueryBuilderSelectors.rules_list));
             }
             else {
                 node.$el.insertAfter(group.rules[index - 1].$el);
             }
             self.refreshGroupsConditions();
         },
-        'update': function(e, node, field, value, oldValue) {
+        'update': function (e, node, field, value, oldValue) {
             if (node instanceof Rule) {
                 switch (field) {
                     case 'error':
@@ -290,7 +455,7 @@ QueryBuilder.prototype.bindEvents = function() {
  * @returns {Group} root group
  * @fires QueryBuilder.afterAddGroup
  */
-QueryBuilder.prototype.setRoot = function(addRule, data, flags) {
+QueryBuilder.prototype.setRoot = function (addRule, data, flags) {
     addRule = (addRule === undefined || addRule === true);
 
     var group_id = this.nextGroupId();
@@ -324,7 +489,7 @@ QueryBuilder.prototype.setRoot = function(addRule, data, flags) {
  * @fires QueryBuilder.beforeAddGroup
  * @fires QueryBuilder.afterAddGroup
  */
-QueryBuilder.prototype.addGroup = function(parent, addRule, data, flags) {
+QueryBuilder.prototype.addGroup = function (parent, addRule, data, flags) {
     addRule = (addRule === undefined || addRule === true);
 
     var level = parent.level + 1;
@@ -373,7 +538,7 @@ QueryBuilder.prototype.addGroup = function(parent, addRule, data, flags) {
  * @fires QueryBuilder.beforeDeleteGroup
  * @fires QueryBuilder.afterDeleteGroup
  */
-QueryBuilder.prototype.deleteGroup = function(group) {
+QueryBuilder.prototype.deleteGroup = function (group) {
     if (group.isRoot()) {
         return false;
     }
@@ -391,9 +556,9 @@ QueryBuilder.prototype.deleteGroup = function(group) {
 
     var del = true;
 
-    group.each('reverse', function(rule) {
+    group.each('reverse', function (rule) {
         del &= this.deleteRule(rule);
-    }, function(group) {
+    }, function (group) {
         del &= this.deleteGroup(group);
     }, this);
 
@@ -417,8 +582,8 @@ QueryBuilder.prototype.deleteGroup = function(group) {
  * @fires QueryBuilder.afterUpdateGroupCondition
  * @private
  */
-QueryBuilder.prototype.updateGroupCondition = function(group) {
-    group.$el.find('>' + QueryBuilder.selectors.group_condition).each(function() {
+QueryBuilder.prototype.updateGroupCondition = function (group) {
+    group.$el.find('>' + QueryBuilderSelectors.group_condition).each(function () {
         var $this = $(this);
         $this.prop('checked', $this.val() === group.condition);
         $this.parent().toggleClass('active', $this.val() === group.condition);
@@ -437,14 +602,14 @@ QueryBuilder.prototype.updateGroupCondition = function(group) {
  * Updates the visibility of conditions based on number of rules inside each group
  * @private
  */
-QueryBuilder.prototype.refreshGroupsConditions = function() {
+QueryBuilder.prototype.refreshGroupsConditions = function () {
     (function walk(group) {
         if (!group.flags || (group.flags && !group.flags.condition_readonly)) {
-            group.$el.find('>' + QueryBuilder.selectors.group_condition).prop('disabled', group.rules.length <= 1)
+            group.$el.find('>' + QueryBuilderSelectors.group_condition).prop('disabled', group.rules.length <= 1)
                 .parent().toggleClass('disabled', group.rules.length <= 1);
         }
 
-        group.each(null, function(group) {
+        group.each(null, function (group) {
             walk(group);
         }, this);
     }(this.model.root));
@@ -460,7 +625,7 @@ QueryBuilder.prototype.refreshGroupsConditions = function() {
  * @fires QueryBuilder.afterAddRule
  * @fires QueryBuilder.changer:getDefaultFilter
  */
-QueryBuilder.prototype.addRule = function(parent, data, flags) {
+QueryBuilder.prototype.addRule = function (parent, data, flags) {
     /**
      * Just before adding a rule, can be prevented
      * @event beforeAddRule
@@ -517,7 +682,7 @@ QueryBuilder.prototype.addRule = function(parent, data, flags) {
  * @fires QueryBuilder.beforeDeleteRule
  * @fires QueryBuilder.afterDeleteRule
  */
-QueryBuilder.prototype.deleteRule = function(rule) {
+QueryBuilder.prototype.deleteRule = function (rule) {
     if (rule.flags.no_delete) {
         return false;
     }
@@ -552,7 +717,7 @@ QueryBuilder.prototype.deleteRule = function(rule) {
  * @fires QueryBuilder.afterCreateRuleFilters
  * @private
  */
-QueryBuilder.prototype.createRuleFilters = function(rule) {
+QueryBuilder.prototype.createRuleFilters = function (rule) {
     /**
      * Modifies the list a filters available for a rule
      * @event changer:getRuleFilters
@@ -564,7 +729,7 @@ QueryBuilder.prototype.createRuleFilters = function(rule) {
     var filters = this.change('getRuleFilters', this.filters, rule);
     var $filterSelect = $(this.getRuleFilterSelect(rule, filters));
 
-    rule.$el.find(QueryBuilder.selectors.filter_container).html($filterSelect);
+    rule.$el.find(QueryBuilderSelectors.filter_container).html($filterSelect);
 
     /**
      * After creating the dropdown for filters
@@ -581,8 +746,8 @@ QueryBuilder.prototype.createRuleFilters = function(rule) {
  * @fires QueryBuilder.afterCreateRuleOperators
  * @private
  */
-QueryBuilder.prototype.createRuleOperators = function(rule) {
-    var $operatorContainer = rule.$el.find(QueryBuilder.selectors.operator_container).empty();
+QueryBuilder.prototype.createRuleOperators = function (rule) {
+    var $operatorContainer = rule.$el.find(QueryBuilderSelectors.operator_container).empty();
 
     if (!rule.filter) {
         return;
@@ -612,8 +777,8 @@ QueryBuilder.prototype.createRuleOperators = function(rule) {
  * @fires QueryBuilder.afterCreateRuleInput
  * @private
  */
-QueryBuilder.prototype.createRuleInput = function(rule) {
-    var $valueContainer = rule.$el.find(QueryBuilder.selectors.value_container).empty();
+QueryBuilder.prototype.createRuleInput = function (rule) {
+    var $valueContainer = rule.$el.find(QueryBuilderSelectors.value_container).empty();
 
     rule.__.value = undefined;
 
@@ -634,7 +799,7 @@ QueryBuilder.prototype.createRuleInput = function(rule) {
 
     $valueContainer.show();
 
-    $inputs.on('change ' + (filter.input_event || ''), function() {
+    $inputs.on('change ' + (filter.input_event || ''), function () {
         if (!this._updating_input) {
             rule._updating_value = true;
             rule.value = self.getRuleInputValue(rule);
@@ -671,11 +836,11 @@ QueryBuilder.prototype.createRuleInput = function(rule) {
  * @fires QueryBuilder.afterUpdateRuleFilter
  * @private
  */
-QueryBuilder.prototype.updateRuleFilter = function(rule, previousFilter) {
+QueryBuilder.prototype.updateRuleFilter = function (rule, previousFilter) {
     this.createRuleOperators(rule);
     this.createRuleInput(rule);
 
-    rule.$el.find(QueryBuilder.selectors.rule_filter).val(rule.filter ? rule.filter.id : '-1');
+    rule.$el.find(QueryBuilderSelectors.rule_filter).val(rule.filter ? rule.filter.id : '-1');
 
     // clear rule data if the filter changed
     if (previousFilter && rule.filter && previousFilter.id !== rule.filter.id) {
@@ -698,8 +863,8 @@ QueryBuilder.prototype.updateRuleFilter = function(rule, previousFilter) {
  * @fires QueryBuilder.afterUpdateRuleOperator
  * @private
  */
-QueryBuilder.prototype.updateRuleOperator = function(rule, previousOperator) {
-    var $valueContainer = rule.$el.find(QueryBuilder.selectors.value_container);
+QueryBuilder.prototype.updateRuleOperator = function (rule, previousOperator) {
+    var $valueContainer = rule.$el.find(QueryBuilderSelectors.value_container);
 
     if (!rule.operator || rule.operator.nb_inputs === 0) {
         $valueContainer.hide();
@@ -718,7 +883,7 @@ QueryBuilder.prototype.updateRuleOperator = function(rule, previousOperator) {
     }
 
     if (rule.operator) {
-        rule.$el.find(QueryBuilder.selectors.rule_operator).val(rule.operator.type);
+        rule.$el.find(QueryBuilderSelectors.rule_operator).val(rule.operator.type);
     }
 
     /**
@@ -738,7 +903,7 @@ QueryBuilder.prototype.updateRuleOperator = function(rule, previousOperator) {
  * @fires QueryBuilder.afterUpdateRuleValue
  * @private
  */
-QueryBuilder.prototype.updateRuleValue = function(rule) {
+QueryBuilder.prototype.updateRuleValue = function (rule) {
     if (!rule._updating_value) {
         this.setRuleInputValue(rule, rule.value);
     }
@@ -758,21 +923,20 @@ QueryBuilder.prototype.updateRuleValue = function(rule) {
  * @fires QueryBuilder.afterApplyRuleFlags
  * @private
  */
-QueryBuilder.prototype.applyRuleFlags = function(rule) {
+QueryBuilder.prototype.applyRuleFlags = function (rule) {
     var flags = rule.flags;
-    var Selectors = QueryBuilder.selectors;
 
     if (flags.filter_readonly) {
-        rule.$el.find(Selectors.rule_filter).prop('disabled', true);
+        rule.$el.find(QueryBuilderSelectors.rule_filter).prop('disabled', true);
     }
     if (flags.operator_readonly) {
-        rule.$el.find(Selectors.rule_operator).prop('disabled', true);
+        rule.$el.find(QueryBuilderSelectors.rule_operator).prop('disabled', true);
     }
     if (flags.value_readonly) {
-        rule.$el.find(Selectors.rule_value).prop('disabled', true);
+        rule.$el.find(QueryBuilderSelectors.rule_value).prop('disabled', true);
     }
     if (flags.no_delete) {
-        rule.$el.find(Selectors.delete_rule).remove();
+        rule.$el.find(QueryBuilderSelectors.delete_rule).remove();
     }
 
     /**
@@ -790,22 +954,21 @@ QueryBuilder.prototype.applyRuleFlags = function(rule) {
  * @fires QueryBuilder.afterApplyGroupFlags
  * @private
  */
-QueryBuilder.prototype.applyGroupFlags = function(group) {
+QueryBuilder.prototype.applyGroupFlags = function (group) {
     var flags = group.flags;
-    var Selectors = QueryBuilder.selectors;
 
     if (flags.condition_readonly) {
-        group.$el.find('>' + Selectors.group_condition).prop('disabled', true)
+        group.$el.find('>' + QueryBuilderSelectors.group_condition).prop('disabled', true)
             .parent().addClass('readonly');
     }
     if (flags.no_add_rule) {
-        group.$el.find(Selectors.add_rule).remove();
+        group.$el.find(QueryBuilderSelectors.add_rule).remove();
     }
     if (flags.no_add_group) {
-        group.$el.find(Selectors.add_group).remove();
+        group.$el.find(QueryBuilderSelectors.add_group).remove();
     }
     if (flags.no_delete) {
-        group.$el.find(Selectors.delete_group).remove();
+        group.$el.find(QueryBuilderSelectors.delete_group).remove();
     }
 
     /**
@@ -821,7 +984,7 @@ QueryBuilder.prototype.applyGroupFlags = function(group) {
  * Clears all errors markers
  * @param {Node} [node] default is root Group
  */
-QueryBuilder.prototype.clearErrors = function(node) {
+QueryBuilder.prototype.clearErrors = function (node) {
     node = node || this.model.root;
 
     if (!node) {
@@ -831,9 +994,9 @@ QueryBuilder.prototype.clearErrors = function(node) {
     node.error = null;
 
     if (node instanceof Group) {
-        node.each(function(rule) {
+        node.each(function (rule) {
             rule.error = null;
-        }, function(group) {
+        }, function (group) {
             this.clearErrors(group);
         }, this);
     }
@@ -845,14 +1008,14 @@ QueryBuilder.prototype.clearErrors = function(node) {
  * @fires QueryBuilder.changer:displayError
  * @private
  */
-QueryBuilder.prototype.updateError = function(node) {
+QueryBuilder.prototype.updateError = function (node) {
     if (this.settings.display_errors) {
         if (node.error === null) {
             node.$el.removeClass('has-error');
         }
         else {
             var errorMessage = this.translate('errors', node.error[0]);
-            errorMessage = Utils.fmt(errorMessage, node.error.slice(1));
+            errorMessage = fmt(errorMessage, node.error.slice(1));
 
             /**
              * Modifies an error message before display
@@ -866,7 +1029,7 @@ QueryBuilder.prototype.updateError = function(node) {
             errorMessage = this.change('displayError', errorMessage, node.error, node);
 
             node.$el.addClass('has-error')
-                .find(QueryBuilder.selectors.error_container).eq(0)
+                .find(QueryBuilderSelectors.error_container).eq(0)
                 .attr('title', errorMessage);
         }
     }
@@ -880,7 +1043,7 @@ QueryBuilder.prototype.updateError = function(node) {
  * @fires QueryBuilder.validationError
  * @private
  */
-QueryBuilder.prototype.triggerValidationError = function(node, error, value) {
+QueryBuilder.prototype.triggerValidationError = function (node, error, value) {
     if (!$.isArray(error)) {
         error = [error];
     }
@@ -898,3 +1061,5 @@ QueryBuilder.prototype.triggerValidationError = function(node, error, value) {
         node.error = error;
     }
 };
+
+export {QueryBuilder};

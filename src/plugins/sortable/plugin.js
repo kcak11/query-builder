@@ -1,3 +1,8 @@
+import {QueryBuilder} from '../../core';
+import {error} from '../../utils';
+import {QueryBuilderSelectors} from '../../defaults';
+import './plugin.scss';
+
 /**
  * @class Sortable
  * @memberof module:plugins
@@ -10,11 +15,11 @@
  */
 QueryBuilder.define('sortable', function(options) {
     if (!('interact' in window)) {
-        Utils.error('MissingLibrary', 'interact.js is required to use "sortable" plugin. Get it here: http://interactjs.io');
+        error('MissingLibrary', 'interact.js is required to use "sortable" plugin. Get it here: http://interactjs.io');
     }
 
     if (options.default_no_sortable !== undefined) {
-        Utils.error(false, 'Config', 'Sortable plugin : "default_no_sortable" options is deprecated, use standard "default_rule_flags" and "default_group_flags" instead');
+        error(false, 'Config', 'Sortable plugin : "default_no_sortable" options is deprecated, use standard "default_rule_flags" and "default_group_flags" instead');
         this.settings.default_rule_flags.no_sortable = this.settings.default_group_flags.no_sortable = options.default_no_sortable;
     }
 
@@ -47,7 +52,7 @@ QueryBuilder.define('sortable', function(options) {
         // Configure drag
         if (!node.flags.no_sortable) {
             interact(node.$el[0])
-                .allowFrom(QueryBuilder.selectors.drag_handle)
+                .allowFrom(QueryBuilderSelectors.drag_handle)
                 .draggable({
                     onstart: function(event) {
                         // get model of dragged element
@@ -100,7 +105,7 @@ QueryBuilder.define('sortable', function(options) {
             //  Configure drop on groups and rules
             interact(node.$el[0])
                 .dropzone({
-                    accept: QueryBuilder.selectors.rule_and_group_containers,
+                    accept: QueryBuilderSelectors.rule_and_group_containers,
                     ondragenter: function(event) {
                         moveSortableToTarget(placeholder, $(event.target), self);
                     },
@@ -111,9 +116,9 @@ QueryBuilder.define('sortable', function(options) {
 
             // Configure drop on group headers
             if (node instanceof Group) {
-                interact(node.$el.find(QueryBuilder.selectors.group_header)[0])
+                interact(node.$el.find(QueryBuilderSelectors.group_header)[0])
                     .dropzone({
-                        accept: QueryBuilder.selectors.rule_and_group_containers,
+                        accept: QueryBuilderSelectors.rule_and_group_containers,
                         ondragenter: function(event) {
                             moveSortableToTarget(placeholder, $(event.target), self);
                         },
@@ -131,7 +136,7 @@ QueryBuilder.define('sortable', function(options) {
             interact(node.$el[0]).unset();
 
             if (node instanceof Group) {
-                interact(node.$el.find(QueryBuilder.selectors.group_header)[0]).unset();
+                interact(node.$el.find(QueryBuilderSelectors.group_header)[0]).unset();
             }
         }
     });
@@ -147,14 +152,14 @@ QueryBuilder.define('sortable', function(options) {
     this.on('getGroupTemplate.filter', function(h, level) {
         if (level > 1) {
             var $h = $(h.value);
-            $h.find(QueryBuilder.selectors.condition_container).after('<div class="drag-handle"><i class="' + options.icon + '"></i></div>');
+            $h.find(QueryBuilderSelectors.condition_container).after('<div class="drag-handle"><i class="' + options.icon + '"></i></div>');
             h.value = $h.prop('outerHTML');
         }
     });
 
     this.on('getRuleTemplate.filter', function(h) {
         var $h = $(h.value);
-        $h.find(QueryBuilder.selectors.rule_header).after('<div class="drag-handle"><i class="' + options.icon + '"></i></div>');
+        $h.find(QueryBuilderSelectors.rule_header).after('<div class="drag-handle"><i class="' + options.icon + '"></i></div>');
         h.value = $h.prop('outerHTML');
     });
 }, {
@@ -163,8 +168,8 @@ QueryBuilder.define('sortable', function(options) {
     icon: 'glyphicon glyphicon-sort'
 });
 
-QueryBuilder.selectors.rule_and_group_containers = QueryBuilder.selectors.rule_container + ', ' + QueryBuilder.selectors.group_container;
-QueryBuilder.selectors.drag_handle = '.drag-handle';
+QueryBuilderSelectors.rule_and_group_containers = QueryBuilderSelectors.rule_container + ', ' + QueryBuilderSelectors.group_container;
+QueryBuilderSelectors.drag_handle = '.drag-handle';
 
 QueryBuilder.defaults({
     default_rule_flags: {
@@ -187,26 +192,25 @@ QueryBuilder.defaults({
  */
 function moveSortableToTarget(node, target, builder) {
     var parent, method;
-    var Selectors = QueryBuilder.selectors;
 
     // on rule
-    parent = target.closest(Selectors.rule_container);
+    parent = target.closest(QueryBuilderSelectors.rule_container);
     if (parent.length) {
         method = 'moveAfter';
     }
 
     // on group header
     if (!method) {
-        parent = target.closest(Selectors.group_header);
+        parent = target.closest(QueryBuilderSelectors.group_header);
         if (parent.length) {
-            parent = target.closest(Selectors.group_container);
+            parent = target.closest(QueryBuilderSelectors.group_container);
             method = 'moveAtBegin';
         }
     }
 
     // on group
     if (!method) {
-        parent = target.closest(Selectors.group_container);
+        parent = target.closest(QueryBuilderSelectors.group_container);
         if (parent.length) {
             method = 'moveAtEnd';
         }

@@ -1,9 +1,13 @@
+import {QueryBuilder} from '../../core';
+import {error} from '../../utils';
+import {QueryBuilderSelectors} from '../../defaults';
+
 /**
  * @class UniqueFilter
  * @memberof module:plugins
  * @description Allows to define some filters as "unique": ie which can be used for only one rule, globally or in the same group.
  */
-QueryBuilder.define('unique-filter', function() {
+QueryBuilder.define('unique-filter', function () {
     this.status.used_filters = {};
 
     this.on('afterUpdateRuleFilter', this.updateDisabledFilters);
@@ -13,13 +17,13 @@ QueryBuilder.define('unique-filter', function() {
     this.on('afterClear', this.clearDisabledFilters);
 
     // Ensure that the default filter is not already used if unique
-    this.on('getDefaultFilter.filter', function(e, model) {
+    this.on('getDefaultFilter.filter', function (e, model) {
         var self = e.builder;
 
         self.updateDisabledFilters();
 
         if (e.value.id in self.status.used_filters) {
-            var found = self.filters.some(function(filter) {
+            var found = self.filters.some(function (filter) {
                 if (!(filter.id in self.status.used_filters) || self.status.used_filters[filter.id].length > 0 && self.status.used_filters[filter.id].indexOf(model.parent) === -1) {
                     e.value = filter;
                     return true;
@@ -27,7 +31,7 @@ QueryBuilder.define('unique-filter', function() {
             });
 
             if (!found) {
-                Utils.error(false, 'UniqueFilter', 'No more non-unique filters available');
+                error(false, 'UniqueFilter', 'No more non-unique filters available');
                 e.value = undefined;
             }
         }
@@ -40,7 +44,7 @@ QueryBuilder.extend(/** @lends module:plugins.UniqueFilter.prototype */ {
      * @param {$.Event} [e]
      * @private
      */
-    updateDisabledFilters: function(e) {
+    updateDisabledFilters: function (e) {
         var self = e ? e.builder : this;
 
         self.status.used_filters = {};
@@ -51,7 +55,7 @@ QueryBuilder.extend(/** @lends module:plugins.UniqueFilter.prototype */ {
 
         // get used filters
         (function walk(group) {
-            group.each(function(rule) {
+            group.each(function (rule) {
                 if (rule.filter && rule.filter.unique) {
                     if (!self.status.used_filters[rule.filter.id]) {
                         self.status.used_filters[rule.filter.id] = [];
@@ -60,7 +64,7 @@ QueryBuilder.extend(/** @lends module:plugins.UniqueFilter.prototype */ {
                         self.status.used_filters[rule.filter.id].push(rule.parent);
                     }
                 }
-            }, function(group) {
+            }, function (group) {
                 walk(group);
             });
         }(self.model.root));
@@ -73,7 +77,7 @@ QueryBuilder.extend(/** @lends module:plugins.UniqueFilter.prototype */ {
      * @param {$.Event} [e]
      * @private
      */
-    clearDisabledFilters: function(e) {
+    clearDisabledFilters: function (e) {
         var self = e ? e.builder : this;
 
         self.status.used_filters = {};
@@ -86,21 +90,21 @@ QueryBuilder.extend(/** @lends module:plugins.UniqueFilter.prototype */ {
      * @param {$.Event} [e]
      * @private
      */
-    applyDisabledFilters: function(e) {
+    applyDisabledFilters: function (e) {
         var self = e ? e.builder : this;
 
         // re-enable everything
-        self.$el.find(QueryBuilder.selectors.filter_container + ' option').prop('disabled', false);
+        self.$el.find(QueryBuilderSelectors.filter_container + ' option').prop('disabled', false);
 
         // disable some
-        $.each(self.status.used_filters, function(filterId, groups) {
+        $.each(self.status.used_filters, function (filterId, groups) {
             if (groups.length === 0) {
-                self.$el.find(QueryBuilder.selectors.filter_container + ' option[value="' + filterId + '"]:not(:selected)').prop('disabled', true);
+                self.$el.find(QueryBuilderSelectors.filter_container + ' option[value="' + filterId + '"]:not(:selected)').prop('disabled', true);
             }
             else {
-                groups.forEach(function(group) {
-                    group.each(function(rule) {
-                        rule.$el.find(QueryBuilder.selectors.filter_container + ' option[value="' + filterId + '"]:not(:selected)').prop('disabled', true);
+                groups.forEach(function (group) {
+                    group.each(function (rule) {
+                        rule.$el.find(QueryBuilderSelectors.filter_container + ' option[value="' + filterId + '"]:not(:selected)').prop('disabled', true);
                     });
                 });
             }
@@ -108,7 +112,7 @@ QueryBuilder.extend(/** @lends module:plugins.UniqueFilter.prototype */ {
 
         // update Selectpicker
         if (self.settings.plugins && self.settings.plugins['bt-selectpicker']) {
-            self.$el.find(QueryBuilder.selectors.rule_filter).selectpicker('render');
+            self.$el.find(QueryBuilderSelectors.rule_filter).selectpicker('render');
         }
     }
 });

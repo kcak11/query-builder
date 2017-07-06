@@ -1,3 +1,9 @@
+import * as $ from 'jquery';
+
+import {QueryBuilder} from './core';
+import {error} from './utils';
+import {QueryBuilderDefaults} from './defaults';
+
 /**
  * @module plugins
  */
@@ -9,24 +15,48 @@
 QueryBuilder.plugins = {};
 
 /**
+ * Localized strings (see i18n/)
+ * @type {object.<string, object>}
+ * @readonly
+ */
+QueryBuilder.regional = {};
+
+/**
+ * Registers or updates a new translation
+ * @param {object} lang
+ * @param {boolean} [setDefault=false]
+ */
+QueryBuilder.addLocale = function (lang, setDefault) {
+    if (!lang.__code) {
+        error('ConfigError', 'Locale has no code');
+    }
+
+    QueryBuilder.regional[lang.__code] = $.extend(true, QueryBuilder.regional[lang.__code] || {}, lang);
+
+    if (setDefault) {
+        QueryBuilder.defaults({lang_code: lang.__code});
+    }
+};
+
+/**
  * Gets or extends the default configuration
  * @param {object} [options] - new configuration
  * @returns {undefined|object} nothing or configuration object (copy)
  */
-QueryBuilder.defaults = function(options) {
+QueryBuilder.defaults = function (options) {
     if (typeof options == 'object') {
-        $.extendext(true, 'replace', QueryBuilder.DEFAULTS, options);
+        $.extendext(true, 'replace', QueryBuilderDefaults, options);
     }
     else if (typeof options == 'string') {
-        if (typeof QueryBuilder.DEFAULTS[options] == 'object') {
-            return $.extend(true, {}, QueryBuilder.DEFAULTS[options]);
+        if (typeof QueryBuilderDefaults[options] == 'object') {
+            return $.extend(true, {}, QueryBuilderDefaults[options]);
         }
         else {
-            return QueryBuilder.DEFAULTS[options];
+            return QueryBuilderDefaults[options];
         }
     }
     else {
-        return $.extend(true, {}, QueryBuilder.DEFAULTS);
+        return $.extend(true, {}, QueryBuilderDefaults);
     }
 };
 
@@ -36,7 +66,7 @@ QueryBuilder.defaults = function(options) {
  * @param {function} fct - init function
  * @param {object} [def] - default options
  */
-QueryBuilder.define = function(name, fct, def) {
+QueryBuilder.define = function (name, fct, def) {
     QueryBuilder.plugins[name] = {
         fct: fct,
         def: def || {}
@@ -47,7 +77,7 @@ QueryBuilder.define = function(name, fct, def) {
  * Adds new methods to QueryBuilder prototype
  * @param {object.<string, function>} methods
  */
-QueryBuilder.extend = function(methods) {
+QueryBuilder.extend = function (methods) {
     $.extend(QueryBuilder.prototype, methods);
 };
 
@@ -56,20 +86,20 @@ QueryBuilder.extend = function(methods) {
  * @throws ConfigError
  * @private
  */
-QueryBuilder.prototype.initPlugins = function() {
+QueryBuilder.prototype.initPlugins = function () {
     if (!this.plugins) {
         return;
     }
 
     if ($.isArray(this.plugins)) {
         var tmp = {};
-        this.plugins.forEach(function(plugin) {
+        this.plugins.forEach(function (plugin) {
             tmp[plugin] = null;
         });
         this.plugins = tmp;
     }
 
-    Object.keys(this.plugins).forEach(function(plugin) {
+    Object.keys(this.plugins).forEach(function (plugin) {
         if (plugin in QueryBuilder.plugins) {
             this.plugins[plugin] = $.extend(true, {},
                 QueryBuilder.plugins[plugin].def,
@@ -79,7 +109,7 @@ QueryBuilder.prototype.initPlugins = function() {
             QueryBuilder.plugins[plugin].fct.call(this, this.plugins[plugin]);
         }
         else {
-            Utils.error('Config', 'Unable to find plugin "{0}"', plugin);
+            error('Config', 'Unable to find plugin "{0}"', plugin);
         }
     }, this);
 };
@@ -91,7 +121,7 @@ QueryBuilder.prototype.initPlugins = function() {
  * @throws ConfigError
  * @returns {*}
  */
-QueryBuilder.prototype.getPluginOptions = function(name, property) {
+QueryBuilder.prototype.getPluginOptions = function (name, property) {
     var plugin;
     if (this.plugins && this.plugins[name]) {
         plugin = this.plugins[name];
@@ -109,6 +139,6 @@ QueryBuilder.prototype.getPluginOptions = function(name, property) {
         }
     }
     else {
-        Utils.error('Config', 'Unable to find plugin "{0}"', name);
+        error('Config', 'Unable to find plugin "{0}"', name);
     }
 };

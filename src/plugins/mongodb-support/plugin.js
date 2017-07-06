@@ -1,3 +1,6 @@
+import {QueryBuilder} from '../../core';
+import {error, escapeRegExp, changeType} from '../../utils';
+
 /**
  * @class MongoDbSupport
  * @memberof module:plugins
@@ -17,12 +20,12 @@ QueryBuilder.defaults({
         greater_or_equal: function(v) { return { '$gte': v[0] }; },
         between:          function(v) { return { '$gte': v[0], '$lte': v[1] }; },
         not_between:      function(v) { return { '$lt': v[0], '$gt': v[1] }; },
-        begins_with:      function(v) { return { '$regex': '^' + Utils.escapeRegExp(v[0]) }; },
-        not_begins_with:  function(v) { return { '$regex': '^(?!' + Utils.escapeRegExp(v[0]) + ')' }; },
-        contains:         function(v) { return { '$regex': Utils.escapeRegExp(v[0]) }; },
-        not_contains:     function(v) { return { '$regex': '^((?!' + Utils.escapeRegExp(v[0]) + ').)*$', '$options': 's' }; },
-        ends_with:        function(v) { return { '$regex': Utils.escapeRegExp(v[0]) + '$' }; },
-        not_ends_with:    function(v) { return { '$regex': '(?<!' + Utils.escapeRegExp(v[0]) + ')$' }; },
+        begins_with:      function(v) { return { '$regex': '^' + escapeRegExp(v[0]) }; },
+        not_begins_with:  function(v) { return { '$regex': '^(?!' + escapeRegExp(v[0]) + ')' }; },
+        contains:         function(v) { return { '$regex': escapeRegExp(v[0]) }; },
+        not_contains:     function(v) { return { '$regex': '^((?!' + escapeRegExp(v[0]) + ').)*$', '$options': 's' }; },
+        ends_with:        function(v) { return { '$regex': escapeRegExp(v[0]) + '$' }; },
+        not_ends_with:    function(v) { return { '$regex': '(?<!' + escapeRegExp(v[0]) + ')$' }; },
         is_empty:         function(v) { return ''; },
         is_not_empty:     function(v) { return { '$ne': '' }; },
         is_null:          function(v) { return null; },
@@ -112,7 +115,7 @@ QueryBuilder.extend(/** @lends module:plugins.MongoDbSupport.prototype */ {
                 group.condition = self.settings.default_condition;
             }
             if (['AND', 'OR'].indexOf(group.condition.toUpperCase()) === -1) {
-                Utils.error('UndefinedMongoCondition', 'Unable to build MongoDB query with condition "{0}"', group.condition);
+                error('UndefinedMongoCondition', 'Unable to build MongoDB query with condition "{0}"', group.condition);
             }
 
             if (!group.rules) {
@@ -131,7 +134,7 @@ QueryBuilder.extend(/** @lends module:plugins.MongoDbSupport.prototype */ {
                     var values = [];
 
                     if (mdb === undefined) {
-                        Utils.error('UndefinedMongoOperator', 'Unknown MongoDB operation for operator "{0}"', rule.operator);
+                        error('UndefinedMongoOperator', 'Unknown MongoDB operation for operator "{0}"', rule.operator);
                     }
 
                     if (ope.nb_inputs !== 0) {
@@ -140,7 +143,7 @@ QueryBuilder.extend(/** @lends module:plugins.MongoDbSupport.prototype */ {
                         }
 
                         rule.value.forEach(function(v) {
-                            values.push(Utils.changeType(v, rule.type, false));
+                            values.push(changeType(v, rule.type, false));
                         });
                     }
 
@@ -227,7 +230,7 @@ QueryBuilder.extend(/** @lends module:plugins.MongoDbSupport.prototype */ {
 
         var key = andOr(query);
         if (!key) {
-            Utils.error('MongoParse', 'Invalid MongoDB query format');
+            error('MongoParse', 'Invalid MongoDB query format');
         }
 
         return (function parse(data, topKey) {
@@ -260,12 +263,12 @@ QueryBuilder.extend(/** @lends module:plugins.MongoDbSupport.prototype */ {
 
                     var operator = determineMongoOperator(value, field);
                     if (operator === undefined) {
-                        Utils.error('MongoParse', 'Invalid MongoDB query format');
+                        error('MongoParse', 'Invalid MongoDB query format');
                     }
 
                     var mdbrl = self.settings.mongoRuleOperators[operator];
                     if (mdbrl === undefined) {
-                        Utils.error('UndefinedMongoOperator', 'JSON Rule operation unknown for operator "{0}"', operator);
+                        error('UndefinedMongoOperator', 'JSON Rule operation unknown for operator "{0}"', operator);
                     }
 
                     var opVal = mdbrl.call(self, value);

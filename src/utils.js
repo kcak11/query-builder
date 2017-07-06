@@ -1,14 +1,4 @@
-/**
- * @namespace
- */
-var Utils = {};
-
-/**
- * @member {object}
- * @memberof QueryBuilder
- * @see Utils
- */
-QueryBuilder.utils = Utils;
+import * as $ from 'jquery';
 
 /**
  * @callback Utils#OptionsIteratee
@@ -32,13 +22,13 @@ QueryBuilder.utils = Utils;
  * @param {object|array} options
  * @param {Utils#OptionsIteratee} tpl
  */
-Utils.iterateOptions = function(options, tpl) {
+export function iterateOptions(options, tpl) {
     if (options) {
         if ($.isArray(options)) {
-            options.forEach(function(entry) {
+            options.forEach(function (entry) {
                 // array of one-element maps
                 if ($.isPlainObject(entry)) {
-                    $.each(entry, function(key, val) {
+                    $.each(entry, function (key, val) {
                         tpl(key, val);
                         return false; // break after first entry
                     });
@@ -51,12 +41,12 @@ Utils.iterateOptions = function(options, tpl) {
         }
         // unordered map
         else {
-            $.each(options, function(key, val) {
+            $.each(options, function (key, val) {
                 tpl(key, val);
             });
         }
     }
-};
+}
 
 /**
  * Replaces {0}, {1}, ... in a string
@@ -64,15 +54,15 @@ Utils.iterateOptions = function(options, tpl) {
  * @param {...*} args
  * @returns {string}
  */
-Utils.fmt = function(str, args) {
+export function fmt(str, args) {
     if (!Array.isArray(args)) {
         args = Array.prototype.slice.call(arguments, 1);
     }
 
-    return str.replace(/{([0-9]+)}/g, function(m, i) {
+    return str.replace(/{([0-9]+)}/g, function (m, i) {
         return args[parseInt(i)];
     });
-};
+}
 
 /**
  * Throws an Error object with custom name or logs an error
@@ -81,7 +71,7 @@ Utils.fmt = function(str, args) {
  * @param {string} message
  * @param {...*} args
  */
-Utils.error = function() {
+export function error() {
     var i = 0;
     var doThrow = typeof arguments[i] === 'boolean' ? arguments[i++] : true;
     var type = arguments[i++];
@@ -89,15 +79,15 @@ Utils.error = function() {
     var args = Array.isArray(arguments[i]) ? arguments[i] : Array.prototype.slice.call(arguments, i);
 
     if (doThrow) {
-        var err = new Error(Utils.fmt(message, args));
+        var err = new Error(fmt(message, args));
         err.name = type + 'Error';
         err.args = args;
         throw err;
     }
     else {
-        console.error(type + 'Error: ' + Utils.fmt(message, args));
+        console.error(type + 'Error: ' + fmt(message, args));
     }
-};
+}
 
 /**
  * Changes the type of a value to int, float or bool
@@ -106,7 +96,7 @@ Utils.error = function() {
  * @param {boolean} [boolAsInt=false] - return 0 or 1 for booleans
  * @returns {*}
  */
-Utils.changeType = function(value, type, boolAsInt) {
+export function changeType(value, type, boolAsInt) {
     switch (type) {
         // @formatter:off
     case 'integer': return parseInt(value);
@@ -117,20 +107,20 @@ Utils.changeType = function(value, type, boolAsInt) {
     default: return value;
     // @formatter:on
     }
-};
+}
 
 /**
  * Escapes a string like PHP's mysql_real_escape_string does
  * @param {string} value
  * @returns {string}
  */
-Utils.escapeString = function(value) {
+export function escapeString(value) {
     if (typeof value != 'string') {
         return value;
     }
 
     return value
-        .replace(/[\0\n\r\b\\\'\"]/g, function(s) {
+        .replace(/[\0\n\r\b\\\'\"]/g, function (s) {
             switch (s) {
                 // @formatter:off
             case '\0': return '\\0';
@@ -144,30 +134,30 @@ Utils.escapeString = function(value) {
         // uglify compliant
         .replace(/\t/g, '\\t')
         .replace(/\x1a/g, '\\Z');
-};
+}
 
 /**
  * Escapes a string for use in regex
  * @param {string} str
  * @returns {string}
  */
-Utils.escapeRegExp = function(str) {
+export function escapeRegExp (str) {
     return str.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-};
+}
 
 /**
  * Escapes a string for use in HTML element id
  * @param {string} str
  * @returns {string}
  */
-Utils.escapeElementId = function(str) {
+export function escapeElementId (str) {
     // Regex based on that suggested by:
     // https://learn.jquery.com/using-jquery-core/faq/how-do-i-select-an-element-by-an-id-that-has-characters-used-in-css-notation/
     // - escapes : . [ ] ,
     // - avoids escaping already escaped values
     return (str) ? str.replace(/(\\)?([:.\[\],])/g,
             function( $0, $1, $2 ) { return $1 ? $0 : '\\' + $2; }) : str;
-};
+}
 
 /**
  * Sorts objects by grouping them by `key`, preserving initial order when possible
@@ -175,7 +165,7 @@ Utils.escapeElementId = function(str) {
  * @param {string} key
  * @returns {object[]}
  */
-Utils.groupSort = function(items, key) {
+export function groupSort (items, key) {
     var optgroups = [];
     var newItems = [];
 
@@ -201,42 +191,4 @@ Utils.groupSort = function(items, key) {
     });
 
     return newItems;
-};
-
-/**
- * Defines properties on an Node prototype with getter and setter.<br>
- *     Update events are emitted in the setter through root Model (if any).<br>
- *     The object must have a `__` object, non enumerable property to store values.
- * @param {function} obj
- * @param {string[]} fields
- */
-Utils.defineModelProperties = function(obj, fields) {
-    fields.forEach(function(field) {
-        Object.defineProperty(obj.prototype, field, {
-            enumerable: true,
-            get: function() {
-                return this.__[field];
-            },
-            set: function(value) {
-                var previousValue = (this.__[field] !== null && typeof this.__[field] == 'object') ?
-                    $.extend({}, this.__[field]) :
-                    this.__[field];
-
-                this.__[field] = value;
-
-                if (this.model !== null) {
-                    /**
-                     * After a value of the model changed
-                     * @event model:update
-                     * @memberof Model
-                     * @param {Node} node
-                     * @param {string} field
-                     * @param {*} value
-                     * @param {*} previousValue
-                     */
-                    this.model.trigger('update', this, field, value, previousValue);
-                }
-            }
-        });
-    });
-};
+}

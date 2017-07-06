@@ -1,3 +1,7 @@
+import {QueryBuilder} from '../../core';
+import {error} from '../../utils';
+import {QueryBuilderSelectors} from '../../defaults';
+
 /**
  * @class BtSelectpicker
  * @memberof module:plugins
@@ -11,32 +15,30 @@
  */
 QueryBuilder.define('bt-selectpicker', function(options) {
     if (!$.fn.selectpicker || !$.fn.selectpicker.Constructor) {
-        Utils.error('MissingLibrary', 'Bootstrap Select is required to use "bt-selectpicker" plugin. Get it here: http://silviomoreto.github.io/bootstrap-select');
+        error('MissingLibrary', 'Bootstrap Select is required to use "bt-selectpicker" plugin. Get it here: http://silviomoreto.github.io/bootstrap-select');
     }
-
-    var Selectors = QueryBuilder.selectors;
 
     // init selectpicker
     this.on('afterCreateRuleFilters', function(e, rule) {
-        rule.$el.find(Selectors.rule_filter).removeClass('form-control').selectpicker(options);
+        rule.$el.find(QueryBuilderSelectors.rule_filter).removeClass('form-control').selectpicker(options);
     });
 
     this.on('afterCreateRuleOperators', function(e, rule) {
-        rule.$el.find(Selectors.rule_operator).removeClass('form-control').selectpicker(options);
+        rule.$el.find(QueryBuilderSelectors.rule_operator).removeClass('form-control').selectpicker(options);
     });
 
     // update selectpicker on change
     this.on('afterUpdateRuleFilter', function(e, rule) {
-        rule.$el.find(Selectors.rule_filter).selectpicker('render');
+        rule.$el.find(QueryBuilderSelectors.rule_filter).selectpicker('render');
     });
 
     this.on('afterUpdateRuleOperator', function(e, rule) {
-        rule.$el.find(Selectors.rule_operator).selectpicker('render');
+        rule.$el.find(QueryBuilderSelectors.rule_operator).selectpicker('render');
     });
 
     this.on('beforeDeleteRule', function(e, rule) {
-        rule.$el.find(Selectors.rule_filter).selectpicker('destroy');
-        rule.$el.find(Selectors.rule_operator).selectpicker('destroy');
+        rule.$el.find(QueryBuilderSelectors.rule_filter).selectpicker('destroy');
+        rule.$el.find(QueryBuilderSelectors.rule_operator).selectpicker('destroy');
     });
 }, {
     container: 'body',
