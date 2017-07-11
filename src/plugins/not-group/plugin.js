@@ -1,6 +1,6 @@
 import {QueryBuilder} from '../../core';
-import {error} from '../../utils';
-import {Group, defineModelProperties} from '../../model'
+import {error, defineModelProperties} from '../../utils';
+import {Group} from '../../model'
 import {QueryBuilderSelectors} from '../../defaults';
 import plugin_lang from './i18n/en';
 

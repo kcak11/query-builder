@@ -1,4 +1,4 @@
-import {defineModelProperties} from './Model';
+import {defineModelProperties} from '../utils';
 
 /**
  * Root abstract object

@@ -1,5 +1,5 @@
 import Node from './Node';
-import {defineModelProperties} from './Model';
+import {defineModelProperties} from '../utils';
 
 /**
  * Rule object
