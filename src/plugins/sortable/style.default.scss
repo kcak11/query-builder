@@ -1,5 +1,5 @@
-$placeholder-border-color: #BBB;
-$placeholder-border: 1px dashed $placeholder-border-color;
+$placeholder-border-color: #BBB !default;
+$placeholder-border: 1px dashed $placeholder-border-color !default;
 
 .query-builder {
   .drag-handle {

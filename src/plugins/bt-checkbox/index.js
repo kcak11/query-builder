@@ -1,6 +1,5 @@
 import {QueryBuilder} from '../../core';
 import {iterateOptions} from '../../utils';
-import './plugin.scss';
 
 /**
  * @class BtCheckbox

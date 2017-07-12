@@ -1,14 +1,12 @@
-$theme-name: dark;
+$group-background-color: rgba(50, 70, 80, .5) !default;
+$group-border-color: #00164A !default;
 
-$group-background-color: rgba(50, 70, 80, .5);
-$group-border-color: #00164A;
+$rule-background-color: rgba(40, 40, 40, .9) !default;
+$rule-border-color: #111 !default;
 
-$rule-background-color: rgba(40, 40, 40, .9);
-$rule-border-color: #111;
+$error-border-color: #800 !default;
+$error-background-color: #322 !default;
 
-$error-border-color: #800;
-$error-background-color: #322;
-
-$ticks-color: #222;
+$ticks-color: #222 !default;
 
 @import 'default';

@@ -1,7 +1,6 @@
 import {QueryBuilder} from '../../core';
 import {error} from '../../utils';
 import {QueryBuilderSelectors} from '../../defaults';
-import './plugin.scss';
 
 /**
  * @class Sortable

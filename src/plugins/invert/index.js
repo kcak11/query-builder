@@ -2,7 +2,6 @@ import {QueryBuilder} from '../../core';
 import {error} from '../../utils';
 import {QueryBuilderSelectors} from '../../defaults';
 import plugin_lang from './i18n/en';
-import './plugin.scss';
 
 QueryBuilder.addLocale(plugin_lang);
 
