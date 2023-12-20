@@ -193,7 +193,7 @@
           //icon: 'glyphicon glyphicon-user',
           value_separator: ',',
           type: 'string',
-          optgroup: 'core',
+          //optgroup: 'core',
           default_value: 'Mistic',
           size: 30,
           validation: {
@@ -211,7 +211,7 @@
           type: 'integer',
           input: 'text',
           value_separator: '|',
-          optgroup: 'core',
+          //optgroup: 'core',
           description: function (rule) {
             if (rule.operator && ['in', 'not_in'].indexOf(rule.operator.type) !== -1) {
               return 'Use a pipe (|) to separate multiple values with "in" and "not in" operators';
@@ -240,7 +240,7 @@
           //icon: 'glyphicon glyphicon-th-list',
           type: 'integer',
           input: 'checkbox',
-          optgroup: 'core',
+          //optgroup: 'core',
           values: {
             1: 'Books',
             2: 'Movies',
@@ -266,38 +266,38 @@
           //icon: 'glyphicon glyphicon-globe',
           type: 'string',
           input: 'select',
-          optgroup: 'core',
+          //optgroup: 'core',
           placeholder: 'Select something',
           values: [
             {
               label: 'Europe',
               value: 'eur',
-              optgroup: 'North'
+              //optgroup: 'North'
             },
             {
               label: 'Asia',
               value: 'asia',
-              optgroup: 'North'
+              //optgroup: 'North'
             },
             {
               label: 'Oceania',
               value: 'oce',
-              optgroup: 'South'
+              //optgroup: 'South'
             },
             {
               label: 'Africa',
               value: 'afr',
-              optgroup: 'South'
+              //optgroup: 'South'
             },
             {
               label: 'North America',
               value: 'na',
-              optgroup: 'North'
+              //optgroup: 'North'
             },
             {
               label: 'South America',
               value: 'sa',
-              optgroup: 'South'
+              //optgroup: 'South'
             },
             {
               label: 'Mordor',
@@ -351,7 +351,7 @@
           //icon: 'glyphicon glyphicon-log-in',
           type: 'integer',
           input: 'radio',
-          optgroup: 'plugin',
+          //optgroup: 'plugin',
           values: {
             1: 'Yes',
             0: 'No'
@@ -407,7 +407,7 @@
           label: 'Identifier',
           //icon: 'glyphicon glyphicon-sunglasses',
           type: 'string',
-          optgroup: 'plugin',
+          //optgroup: 'plugin',
           placeholder: '____-____-____',
           size: 14,
           operators: ['equal', 'not_equal'],
