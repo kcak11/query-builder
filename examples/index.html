@@ -129,6 +129,8 @@
   <script src="/node_modules/sql-parser-mistic/browser/sql-parser.js"></script>
   <script src="/node_modules/interactjs/dist/interact.js"></script>
 
+  <script type="text/javascript" src="ah-customizations.js"></script>
+
   <script src="/dist/js/query-builder.js"></script>
 
   <script>
@@ -548,6 +550,8 @@
 
     // init
     $('#builder').queryBuilder(options);
+
+    QueryBuilderUtil.restrictSpecialCharsInTextInput();
 
     $('#builder').on('afterCreateRuleInput.queryBuilder', function (e, rule) {
       if (rule.filter.plugin == 'selectize') {
