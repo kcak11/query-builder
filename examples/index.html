@@ -549,6 +549,8 @@
     };
 
     // init
+    QueryBuilderUtil.applyFieldPrefix(options);
+
     $('#builder').queryBuilder(options);
 
     QueryBuilderUtil.restrictSpecialCharsInTextInput();
@@ -670,7 +672,8 @@
 
     // set rules from SQL
     $('.set-sql').on('click', function () {
-      $('#builder').queryBuilder('setRulesFromSQL', 'username NOT LIKE "Mistic%" OR price BETWEEN 100 OR 200 OR NOT (category IN(1, 2) AND rate <= 20)');
+      $('#builder').queryBuilder('setRulesFromSQL', "amount = 40 OR email = 'test@example.com' OR user_loginid = 'nbruce' OR  user_loginid = 'TestUSER' OR expression_group = 'Employee'  ");
+      // $('#builder').queryBuilder('setRulesFromSQL', "amount = 40 AND email = 'test@example.com' OR user_loginid = 'nbruce' OR  user_loginid = 'TestUSER'  ");
     });
 
     // reset builder
