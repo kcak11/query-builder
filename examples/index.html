@@ -425,66 +425,67 @@
         /*
          * custom input
          */
-        {
-          id: 'coord',
-          label: 'Coordinates',
-          //icon: 'glyphicon glyphicon-star-empty',
-          type: 'string',
-          default_value: 'C.5',
-          description: 'The letter is the cadran identifier:\
-<ul>\
-  <li><b>A</b>: alpha</li>\
-  <li><b>B</b>: beta</li>\
-  <li><b>C</b>: gamma</li>\
-</ul>',
-          validation: {
-            format: /^[A-C]{1}.[1-6]{1}$/
-          },
-          input: function (rule, name) {
-            var $container = rule.$el.find('.rule-value-container');
+        //         {
+        //           id: 'coord',
+        //           label: 'Coordinates',
+        //           //icon: 'glyphicon glyphicon-star-empty',
+        //           type: 'string',
+        //           default_value: 'C.5',
+        //           description: 'The letter is the cadran identifier:\
+        // <ul>\
+        //   <li><b>A</b>: alpha</li>\
+        //   <li><b>B</b>: beta</li>\
+        //   <li><b>C</b>: gamma</li>\
+        // </ul>',
+        //           validation: {
+        //             format: /^[A-C]{1}.[1-6]{1}$/
+        //           },
+        //           input: function (rule, name) {
+        //             var $container = rule.$el.find('.rule-value-container');
 
-            $container.on('change', '[name=' + name + '_1]', function () {
-              var h = '';
+        //             $container.on('change', '[name=' + name + '_1]', function () {
+        //               var h = '';
 
-              switch ($(this).val()) {
-                case 'A':
-                  h = '<option value="-1">-</option> <option value="1">1</option> <option value="2">2</option>';
-                  break;
-                case 'B':
-                  h = '<option value="-1">-</option> <option value="3">3</option> <option value="4">4</option>';
-                  break;
-                case 'C':
-                  h = '<option value="-1">-</option> <option value="5">5</option> <option value="6">6</option>';
-                  break;
-              }
+        //               switch ($(this).val()) {
+        //                 case 'A':
+        //                   h = '<option value="-1">-</option> <option value="1">1</option> <option value="2">2</option>';
+        //                   break;
+        //                 case 'B':
+        //                   h = '<option value="-1">-</option> <option value="3">3</option> <option value="4">4</option>';
+        //                   break;
+        //                 case 'C':
+        //                   h = '<option value="-1">-</option> <option value="5">5</option> <option value="6">6</option>';
+        //                   break;
+        //               }
 
-              $container.find('[name$=_2]')
-                .html(h).toggle(!!h)
-                .val('-1').trigger('change');
-            });
+        //               $container.find('[name$=_2]')
+        //                 .html(h).toggle(!!h)
+        //                 .val('-1').trigger('change');
+        //             });
 
-            return '\
-<select name="' + name + '_1"> \
-  <option value="-1">-</option> \
-  <option value="A">A</option> \
-  <option value="B">B</option> \
-  <option value="C">C</option> \
-</select> \
-<select name="' + name + '_2" style="display:none;"></select>';
-          },
-          valueGetter: function (rule) {
-            return rule.$el.find('.rule-value-container [name$=_1]').val()
-              + '.' + rule.$el.find('.rule-value-container [name$=_2]').val();
-          },
-          valueSetter: function (rule, value) {
-            if (rule.operator.nb_inputs > 0) {
-              var val = value.split('.');
+        //             return '\
+        // <select name="' + name + '_1"> \
+        //   <option value="-1">-</option> \
+        //   <option value="A">A</option> \
+        //   <option value="B">B</option> \
+        //   <option value="C">C</option> \
+        // </select> \
+        // <select name="' + name + '_2" style="display:none;"></select>';
+        //           },
+        //           valueGetter: function (rule) {
+        //             return rule.$el.find('.rule-value-container [name$=_1]').val()
+        //               + '.' + rule.$el.find('.rule-value-container [name$=_2]').val();
+        //           },
+        //           valueSetter: function (rule, value) {
+        //             if (rule.operator.nb_inputs > 0) {
+        //               var val = value.split('.');
 
-              rule.$el.find('.rule-value-container [name$=_1]').val(val[0]).trigger('change');
-              rule.$el.find('.rule-value-container [name$=_2]').val(val[1]).trigger('change');
-            }
-          }
-        }]
+        //               rule.$el.find('.rule-value-container [name$=_1]').val(val[0]).trigger('change');
+        //               rule.$el.find('.rule-value-container [name$=_2]').val(val[1]).trigger('change');
+        //             }
+        //           }
+        //         }
+      ]
     };
 
     // init
