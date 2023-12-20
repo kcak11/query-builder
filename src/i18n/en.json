@@ -1,26 +1,23 @@
 {
   "__locale": "English (en)",
   "__author": "Damien \"Mistic\" Sorel, http://www.strangeplanet.fr",
-
   "add_rule": "Add rule",
   "add_group": "Add group",
   "delete_rule": "Delete",
   "delete_group": "Delete",
-
   "conditions": {
     "AND": "AND",
     "OR": "OR"
   },
-
   "operators": {
     "equal": "equal",
     "not_equal": "not equal",
     "in": "in",
     "not_in": "not in",
     "less": "less",
-    "less_or_equal": "less or equal",
+    "less_or_equal": "less than or equal",
     "greater": "greater",
-    "greater_or_equal": "greater or equal",
+    "greater_or_equal": "greater than or equal",
     "between": "between",
     "not_between": "not between",
     "begins_with": "begins with",
@@ -34,7 +31,6 @@
     "is_null": "is null",
     "is_not_null": "is not null"
   },
-
   "errors": {
     "no_filter": "No filter selected",
     "empty_group": "The group is empty",
