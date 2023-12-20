@@ -149,32 +149,34 @@
         //      'chosen-selectpicker': null,
         'unique-filter': null,
         'bt-checkbox': { color: 'primary' },
-        'invert': null,
-        'not-group': null
+        // 'invert': null,
+        // 'not-group': null
       },
 
       // standard operators in custom optgroups
       operators: [
         { type: 'equal', optgroup: 'basic' },
         { type: 'not_equal', optgroup: 'basic' },
-        { type: 'in', optgroup: 'basic' },
-        { type: 'not_in', optgroup: 'basic' },
         { type: 'less', optgroup: 'numbers' },
         { type: 'less_or_equal', optgroup: 'numbers' },
         { type: 'greater', optgroup: 'numbers' },
         { type: 'greater_or_equal', optgroup: 'numbers' },
-        { type: 'between', optgroup: 'numbers' },
-        { type: 'not_between', optgroup: 'numbers' },
-        { type: 'begins_with', optgroup: 'strings' },
-        { type: 'not_begins_with', optgroup: 'strings' },
-        { type: 'contains', optgroup: 'strings' },
-        { type: 'not_contains', optgroup: 'strings' },
-        { type: 'ends_with', optgroup: 'strings' },
-        { type: 'not_ends_with', optgroup: 'strings' },
-        { type: 'is_empty' },
-        { type: 'is_not_empty' },
-        { type: 'is_null' },
-        { type: 'is_not_null' }
+        /*
+          { type: 'in', optgroup: 'basic' },
+          { type: 'not_in', optgroup: 'basic' },
+          { type: 'between', optgroup: 'numbers' },
+          { type: 'not_between', optgroup: 'numbers' },
+          { type: 'begins_with', optgroup: 'strings' },
+          { type: 'not_begins_with', optgroup: 'strings' },
+          { type: 'contains', optgroup: 'strings' },
+          { type: 'not_contains', optgroup: 'strings' },
+          { type: 'ends_with', optgroup: 'strings' },
+          { type: 'not_ends_with', optgroup: 'strings' },
+          { type: 'is_empty' },
+          { type: 'is_not_empty' },
+          { type: 'is_null' },
+          { type: 'is_not_null' }
+          */
       ],
 
       filters: [
@@ -252,8 +254,8 @@
             2: 'warning',
             5: 'success'
           },
-          operators: ['equal', 'not_equal', 'in', 'not_in', 'is_null', 'is_not_null'],
-          default_operator: 'in'
+          operators: ['equal', 'not_equal',/* 'in', 'not_in', 'is_null', 'is_not_null'*/],
+          default_operator: 'equal'
         },
         /*
          * select
