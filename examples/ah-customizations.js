@@ -49,9 +49,6 @@
                     }
                     return value;
                 }
-                if (key === "value" && typeof value === "string") {
-                    console.log(value);
-                }
                 if (key === "operator") {
                     if (value === "equal") {
                         return "EQ";
