@@ -6,7 +6,7 @@
                     if (key === "field") {
                         if (("" + value).toLowerCase() === "group") {
                             //"group" is a reserved SQL keyword, hence prefixing it.
-                            return "sspexp_group";
+                            return "sspexp_" + value;
                         }
                         return value;
                     }
@@ -49,6 +49,7 @@
             result = result.replace(/ <= /gi, " LE ");
             result = result.replace(/ > /gi, " GT ");
             result = result.replace(/ >= /gi, " GE ");
+            result = result.replace(/sspexp_/gi, "");
             return result;
         }
     };
