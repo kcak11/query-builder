@@ -41,7 +41,48 @@
                 }
             }, false);
         },
+        transformJSONOutput: function (obj) {
+            var result = JSON.parse(JSON.stringify(obj, function (key, value) {
+                if (key === "field") {
+                    if (value.indexOf("sspexp_") === 0) {
+                        return value.replace(/sspexp_/gi, "");
+                    }
+                    return value;
+                }
+                if (key === "value" && typeof value === "string") {
+                    console.log(value);
+                }
+                if (key === "operator") {
+                    if (value === "equal") {
+                        return "EQ";
+                    }
+                    if (value === "not_equal") {
+                        return "NE";
+                    }
+                    if (value === "less") {
+                        return "LT";
+                    }
+                    if (value === "less_or_equal") {
+                        return "LE";
+                    }
+                    if (value === "greater") {
+                        return "GT";
+                    }
+                    if (value === "greater_or_equal") {
+                        return "GE";
+                    }
+                    return value;
+                }
+                return value;
+            }));
+            return result;
+        },
         transformSQLToAHExpression: function (sql) {
+            var resultAsObject = QueryBuilderUtil.transformJSONOutput($('#builder').queryBuilder('getRules', {
+                get_flags: true,
+                skip_empty: true
+            }));
+
             var result = sql;
             result = result.replace(/ != /gi, " NE ");
             result = result.replace(/ = /gi, " EQ ");
@@ -50,6 +91,19 @@
             result = result.replace(/ > /gi, " GT ");
             result = result.replace(/ >= /gi, " GE ");
             result = result.replace(/sspexp_/gi, "");
+            result = result.replace(/'/gi, "");
+
+            JSON.stringify(resultAsObject, function (key, value) {
+                if (key === "rules" && (value instanceof Array)) {
+                    value.forEach((rule) => {
+                        var _r = rule.field + " " + rule.operator + " " + rule.value;
+                        result = result.split(_r).join("(" + _r + ")");
+                    });
+                }
+                return value;
+            });
+            result = "(" + result + ")";
+            result = result.split("(").map((t) => { return t.trim(); }).join("(").split(")").map((t) => { return t.trim(); }).join(")").replace(/\)and\(/gi, ") AND (").replace(/\)or\(/gi, ") OR (");
             return result;
         }
     };
