@@ -6,7 +6,7 @@
                     if (key === "field") {
                         if (("" + value).toLowerCase() === "group") {
                             //"group" is a reserved SQL keyword, hence prefixing it.
-                            return "expression_group";
+                            return "sspexp_group";
                         }
                         return value;
                     }

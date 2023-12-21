@@ -92,28 +92,29 @@
 
       <div class="btn-group">
         <button class="btn btn-danger reset">Reset</button>
-        <!-- <button class="btn btn-warning set-filters" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Adds a filter 'New filter' and removes 'Coordinates', 'State', 'BSON'">Set filters -->
-        </button>
+        <!-- <button class="btn btn-warning set-filters" data-toggle="tooltip" data-container="body" data-placement="bottom" title="Adds a filter 'New filter' and removes 'Coordinates', 'State', 'BSON'">Set filters </button> -->
       </div>
 
       <div class="btn-group">
         <button class="btn btn-default" disabled>Set:</button>
         <!-- <button class="btn btn-success set">From JSON</button> -->
         <!-- <button class="btn btn-success set-mongo">From MongoDB</button> -->
-        <button class="btn btn-success set-sql">From SQL</button>
+        <button class="btn btn-success set-sql">Input</button>
       </div>
 
       <div class="btn-group">
         <button class="btn btn-default" disabled>Get:</button>
         <!-- <button class="btn btn-primary parse-json">JSON</button> -->
-        <button class="btn btn-primary parse-sql" data-stmt="false">SQL</button>
+        <button class="btn btn-primary parse-sql" data-stmt="false">Output</button>
         <!-- <button class="btn btn-primary parse-sql" data-stmt="question_mark">SQL statement</button> -->
         <!-- <button class="btn btn-primary parse-mongo">MongoDB</button> -->
       </div>
 
       <div id="result" class="hide">
-        <h3>Output</h3>
-        <pre></pre>
+        <h3>Output (SQL)</h3>
+        <pre id="SQL"></pre>
+        <h3>Output (AH Expression)</h3>
+        <pre id="AHEXPRESSION"></pre>
       </div>
     </div>
   </div>
@@ -672,9 +673,9 @@
 
     // set rules from SQL
     $('.set-sql').on('click', function () {
-      $('#builder').queryBuilder('setRulesFromSQL', "amount = 40 OR email = 'test@example.com' OR user_loginid = 'nbruce' OR  user_loginid = 'TestUSER' OR expression_group = 'Employee'  ");
-      // $('#builder').queryBuilder('setRulesFromSQL', "amount = 40 AND email = 'test@example.com' OR user_loginid = 'nbruce' OR  user_loginid = 'TestUSER'  ");
+      $('#builder').queryBuilder('setRulesFromSQL', "amount = 40 OR email = 'test@example.com' OR user_loginid = 'nbruce' OR  user_loginid = 'TestUSER' OR sspexp_group = 'Employee'  ");
     });
+    $('.set-sql').trigger("click");
 
     // reset builder
     $('.reset').on('click', function () {
@@ -704,10 +705,13 @@
 
     $('.parse-sql').on('click', function () {
       var res = $('#builder').queryBuilder('getSQL', $(this).data('stmt'), false);
-      $('#result').removeClass('hide')
-        .find('pre').html(
-          res.sql + (res.params ? '\n\n' + JSON.stringify(res.params, undefined, 2) : '')
-        );
+      $('#result').removeClass('hide');
+      $("#result").find('pre#SQL').html(
+        res.sql + (res.params ? '\n\n' + JSON.stringify(res.params, undefined, 2) : '')
+      );
+      $("#result").find('pre#AHEXPRESSION').html(
+        "Work in progress . . . . ."
+      );
     });
 
     // set filters
