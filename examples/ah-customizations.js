@@ -40,6 +40,16 @@
                     }
                 }
             }, false);
+        },
+        transformSQLToAHExpression: function (sql) {
+            var result = sql;
+            result = result.replace(/ != /gi, " NE ");
+            result = result.replace(/ = /gi, " EQ ");
+            result = result.replace(/ < /gi, " LT ");
+            result = result.replace(/ <= /gi, " LE ");
+            result = result.replace(/ > /gi, " GT ");
+            result = result.replace(/ >= /gi, " GE ");
+            return result;
         }
     };
     window.QueryBuilderUtil = QBU;

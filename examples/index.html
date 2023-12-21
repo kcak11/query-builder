@@ -673,7 +673,7 @@
 
     // set rules from SQL
     $('.set-sql').on('click', function () {
-      $('#builder').queryBuilder('setRulesFromSQL', "amount = 40 OR email = 'test@example.com' OR user_loginid = 'nbruce' OR  user_loginid = 'TestUSER' OR sspexp_group = 'Employee'  ");
+      $('#builder').queryBuilder('setRulesFromSQL', "amount >= 40 OR email = 'test@example.com' OR user_loginid = 'nbruce' OR  user_loginid = 'TestUSER' OR sspexp_group = 'Employee'  ");
     });
     $('.set-sql').trigger("click");
 
@@ -710,7 +710,7 @@
         res.sql + (res.params ? '\n\n' + JSON.stringify(res.params, undefined, 2) : '')
       );
       $("#result").find('pre#AHEXPRESSION').html(
-        "Work in progress . . . . ."
+        QueryBuilderUtil.transformSQLToAHExpression(res.sql)
       );
     });
 
