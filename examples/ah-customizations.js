@@ -106,6 +106,16 @@
         transformAHExpressonToSQL: function (expr) {
             var result = expr;
 
+            result = result.split("(").map((t) => {
+                return t.trim();
+            }).join("(").split(")").map((t) => {
+                return t.trim();
+            }).join(")")
+                .replace(/\)and/gi, ") AND")
+                .replace(/and\(/gi, "AND (")
+                .replace(/\)or/gi, ") OR")
+                .replace(/or\(/gi, "OR (");
+
             result = result.replace(/\(group /gi, "(sspexp_group ");
 
             return result;
