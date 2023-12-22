@@ -123,6 +123,7 @@
         <pre id="SQL"></pre>
         <h3>Output (AH Expression)</h3>
         <textarea id="AHEXPRESSION"></textarea>
+        <button class="btn btn-primary update-widget">Update Widget</button>
       </div>
     </div>
   </div>
@@ -717,9 +718,11 @@
       $("#result").find('pre#SQL').html(
         res.sql + (res.params ? '\n\n' + JSON.stringify(res.params, undefined, 2) : '')
       );
-      $("#result").find('textarea#AHEXPRESSION').html(
-        QueryBuilderUtil.transformSQLToAHExpression(res.sql)
-      );
+      $("#result").find('textarea#AHEXPRESSION')[0].value = QueryBuilderUtil.transformSQLToAHExpression(res.sql);
+    });
+
+    $('.update-widget').on('click', function () {
+      QueryBuilderUtil.transformAHExpressonToSQL($("#result").find('textarea#AHEXPRESSION')[0].value);
     });
 
     // set filters

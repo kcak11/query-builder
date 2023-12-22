@@ -102,6 +102,9 @@
             result = "(" + result + ")";
             result = result.split("(").map((t) => { return t.trim(); }).join("(").split(")").map((t) => { return t.trim(); }).join(")").replace(/\)and\(/gi, ") AND (").replace(/\)or\(/gi, ") OR (");
             return result;
+        },
+        transformAHExpressonToSQL: function (expr) {
+            console.log("hello world", expr);
         }
     };
     window.QueryBuilderUtil = QBU;
