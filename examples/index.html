@@ -35,6 +35,13 @@
     .dropdown-header {
       display: none;
     }
+
+    textarea#AHEXPRESSION {
+      width: 100%;
+      outline: none;
+      resize: none;
+      height: 60px;
+    }
   </style>
 </head>
 
@@ -115,7 +122,7 @@
         <h3>Output (SQL)</h3>
         <pre id="SQL"></pre>
         <h3>Output (AH Expression)</h3>
-        <pre id="AHEXPRESSION"></pre>
+        <textarea id="AHEXPRESSION"></textarea>
       </div>
     </div>
   </div>
@@ -710,7 +717,7 @@
       $("#result").find('pre#SQL').html(
         res.sql + (res.params ? '\n\n' + JSON.stringify(res.params, undefined, 2) : '')
       );
-      $("#result").find('pre#AHEXPRESSION').html(
+      $("#result").find('textarea#AHEXPRESSION').html(
         QueryBuilderUtil.transformSQLToAHExpression(res.sql)
       );
     });
