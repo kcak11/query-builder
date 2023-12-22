@@ -723,7 +723,7 @@
 
     $('.update-widget').on('click', function () {
       var sql = QueryBuilderUtil.transformAHExpressonToSQL($("#result").find('textarea#AHEXPRESSION')[0].value);
-      console.log(sql);
+      $('#builder').queryBuilder('setRulesFromSQL', sql);
     });
 
     // set filters
