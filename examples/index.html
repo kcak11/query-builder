@@ -722,7 +722,8 @@
     });
 
     $('.update-widget').on('click', function () {
-      QueryBuilderUtil.transformAHExpressonToSQL($("#result").find('textarea#AHEXPRESSION')[0].value);
+      var sql = QueryBuilderUtil.transformAHExpressonToSQL($("#result").find('textarea#AHEXPRESSION')[0].value);
+      console.log(sql);
     });
 
     // set filters

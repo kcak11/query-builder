@@ -104,7 +104,11 @@
             return result;
         },
         transformAHExpressonToSQL: function (expr) {
-            console.log("hello world", expr);
+            var result = expr;
+
+            result = result.replace(/\(group /gi, "(sspexp_group ");
+
+            return result;
         }
     };
     window.QueryBuilderUtil = QBU;
