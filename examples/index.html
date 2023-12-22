@@ -723,7 +723,15 @@
 
     $('.update-widget').on('click', function () {
       var sql = QueryBuilderUtil.transformAHExpressonToSQL($("#result").find('textarea#AHEXPRESSION')[0].value);
-      $('#builder').queryBuilder('setRulesFromSQL', sql);
+      try {
+        $('#builder').queryBuilder('setRulesFromSQL', sql);
+        $("#result").find('textarea#AHEXPRESSION')[0].style.color = "#000";
+        $("#result").find('textarea#AHEXPRESSION')[0].style.borderColor = "#000";
+      } catch (exjs) {
+        $("#result").find('textarea#AHEXPRESSION')[0].style.color = "#a94442";
+        $("#result").find('textarea#AHEXPRESSION')[0].style.borderColor = "#a94442";
+        throw exjs;
+      }
     });
 
     // set filters
